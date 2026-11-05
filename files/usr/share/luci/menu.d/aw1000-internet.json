@@ -1,0 +1,15 @@
+{
+  "admin/network/aw1000_internet": {
+    "title": "上网设置",
+    "order": 15,
+    "action": {
+      "type": "view",
+      "path": "aw1000/internet"
+    },
+    "depends": {
+      "acl": [
+        "aw1000-internet"
+      ]
+    }
+  }
+}

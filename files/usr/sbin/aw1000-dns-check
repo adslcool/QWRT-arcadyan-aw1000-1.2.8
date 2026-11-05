@@ -1,0 +1,181 @@
+#!/bin/sh
+# Read-only DNS/dual-WAN evidence. No full UCI dump, modem AT or service changes.
+# Only --query performs network lookups; normal collection needs no Internet.
+case "${1:-}" in
+    '') query=0;;
+    --query) query=1;;
+    *) echo 'Usage: aw1000-dns-check [--query [domain]]' >&2; exit 2;;
+esac
+[ "$#" -le 2 ] || { echo 'Too many arguments' >&2; exit 2; }
+domain=${2:-www.baidu.com}
+case "$domain" in ''|-*|*[!A-Za-z0-9.-]*) echo 'Invalid query domain' >&2; exit 2;; esac
+[ "${#domain}" -le 253 ] || { echo 'Query domain too long' >&2; exit 2; }
+get() { uci -q get "$1" 2>/dev/null || true; }
+valid() { case "$1" in ''|*[!A-Za-z0-9_]*) return 1;; esac; }
+show_file() { [ ! -r "$1" ] || { echo "file=$1"; cat "$1"; echo; }; }
+service_status() {
+    [ ! -x "/etc/init.d/$1" ] || { printf '%s=' "$1"; "/etc/init.d/$1" status 2>/dev/null || true; }
+}
+# Only DNS/network fields are selected. Never expose PPPoE usernames/passwords,
+# QModem SIM data, the complete service command, or arbitrary config contents.
+interface_status() {
+    valid "$1" || return 0
+    echo "interface=$1"
+    ubus -t 3 call "network.interface.$1" status 2>/dev/null | jq -c '
+      {up,pending,available,proto,device,l3_device,
+       ipv4:.["ipv4-address"],ipv6:.["ipv6-address"],prefixes:.["ipv6-prefix"],
+       dns:.["dns-server"],route,
+       errors:[.errors[]? | {code}]}' 2>/dev/null || echo 'status=unavailable'
+    for key in peerdns dns defaultroute metric; do
+        printf '%s=' "$key"; get "network.$1.$key"; echo
+    done
+}
+dns_lines() {
+    [ -r "$1" ] || return 0
+    echo "file=$1"
+    # Forwarder URLs and credentials are not valid plain dnsmasq upstreams.
+    # Suppress such lines defensively, including dnsmasq's interface bind suffix.
+    awk '
+      function emit(value) {
+        if (++count<=80) print value
+        else { print "[remaining DNS lines omitted]"; exit }
+      }
+      /^[ \t]*#/ { next }
+      /^[ \t]*(no-resolv|filter-aaaa|strict-order|all-servers)[ \t]*$/ { emit($0); next }
+      /^[ \t]*(server|resolv-file|conf-dir|conf-file|port|interface|except-interface|listen-address|bind-interfaces|bind-dynamic|local-service)=/ {
+        if ($0 ~ /@|:\/\//) emit("[credential-bearing or bound value omitted]")
+        else emit($0)
+      }' "$1"
+}
+
+echo '[version and services]'
+cat /etc/aw1000-mod-version /etc/aw1000-build-date 2>/dev/null
+uname -r
+for service in aw1000-internet mwan3 dnsmasq mosdns odhcpd; do service_status "$service"; done
+
+cell=$(get mwan3.globals.aw1000_cellular)
+valid "$cell" || cell=''
+selected=$(cat /var/run/aw1000-mwan-follow/selected 2>/dev/null)
+valid "$selected" || selected=''
+echo '[published selection / safe application status]'
+printf 'managed=%s\npriority=%s\ncellular_interface=%s\nselected=%s\n' \
+    "$(get mwan3.globals.aw1000_enabled)" "$(get aw1000.internet.priority)" "$cell" "$selected"
+ubus -t 3 call aw1000.internet status 2>/dev/null | jq -c '
+  {selected,priority,mode,sim,blocked,wan_health,cell_health,wired_up,cellular_up,
+   dns_choice,dns_mode,dns_servers,ipv6,wired_errors:[.wired_errors[]? | {code}]}' 2>/dev/null || true
+show_file /var/run/aw1000-mwan-follow/dns-signature
+show_file /var/run/aw1000-internet/wan-route-guard.json
+echo '[pending controller work]'
+for flag in reload-needed mwan-reload-needed dirty blocked; do
+    path="/var/run/aw1000-internet/$flag"
+    if [ -f "$path" ]; then
+        printf '%s=present' "$flag"
+        if [ "$flag" = blocked ]; then
+            blocked=$(cat "$path" 2>/dev/null)
+            valid "$blocked" && printf ' interface=%s' "$blocked"
+        fi
+        echo
+    else
+        printf '%s=absent\n' "$flag"
+    fi
+done
+
+echo '[IPv4 tracker and interfaces]'
+seen=''
+for iface in lan wan "$cell" "$selected"; do
+    valid "$iface" || continue
+    case " $seen " in *" $iface "*) continue;; esac
+    seen="$seen $iface"
+    interface_status "$iface"
+    for key in STATUS TIME ONLINE OFFLINE; do
+        path="/var/run/mwan3track/$iface/$key"
+        [ ! -r "$path" ] || { printf 'tracker_%s=' "$key"; cat "$path"; echo; }
+    done
+done
+echo '[IPv4 routes / installed mwan policy]'
+ip -4 route show table main 2>/dev/null
+ip -4 rule show 2>/dev/null
+iptables -t mangle -w 1 -S mwan3_policy_aw_failover 2>/dev/null || true
+
+echo '[LAN DHCP/RA DNS advertisement]'
+for item in network.lan.ipaddr dhcp.lan.dns dhcp.lan.ra dhcp.lan.dhcpv6 dhcp.lan.ndp dhcp.lan.ra_lifetime; do
+    printf '%s=' "$item"; get "$item"; echo
+done
+for option in $(get dhcp.lan.dhcp_option); do
+    case "$option" in 6,*) printf 'dhcp.lan.dhcp_option=%s\n' "$option";; esac
+done
+echo '[DNS configuration / ownership]'
+printf 'mosdns.enabled=%s\nmosdns.redirect=%s\n' "$(get mosdns.config.enabled)" "$(get mosdns.config.redirect)"
+for section in $(uci -q show dhcp 2>/dev/null | sed -n 's/^dhcp\.\([^=]*\)=dnsmasq$/\1/p'); do
+    printf '%s\n' "$section" | grep -Eq '^([A-Za-z0-9_]+|@dnsmasq\[[0-9]+\])$' || continue
+    echo "dnsmasq_section=$section"
+    for key in disabled port noresolv resolvfile confdir filter_aaaa; do
+        printf '%s=' "$key"; get "dhcp.$section.$key"; echo
+    done
+    for server in $(get "dhcp.$section.server"); do
+        case "$server" in *'@'*|*'://'*) echo 'server=[credential-bearing or bound value omitted]';;
+            *) printf 'server=%s\n' "$server";;
+        esac
+    done
+done
+for file in /etc/resolv.conf /tmp/resolv.conf.auto /tmp/resolv.conf.d/resolv.conf.auto; do
+    [ -r "$file" ] || continue
+    echo "file=$file"; sed -n '/^[[:space:]]*nameserver[[:space:]]/p' "$file"
+done
+for file in /etc/dnsmasq.conf /var/etc/dnsmasq.conf.* /tmp/etc/dnsmasq.conf.* /tmp/dnsmasq.d/*; do
+    [ -f "$file" ] && dns_lines "$file"
+done
+if [ -r /var/run/aw1000-mwan-follow/dns-files ]; then
+    while IFS= read -r file; do
+        case "$file" in /tmp/dnsmasq*.d/aw1000-mwan.conf) dns_lines "$file";; esac
+    done < /var/run/aw1000-mwan-follow/dns-files
+fi
+echo '[DNS listeners: local addresses only]'
+if command -v netstat >/dev/null 2>&1; then
+    netstat -lntu 2>/dev/null | awk 'NR<=2 || $4 ~ /:(53|5333|5335|7874|1053)$/ { print }'
+else
+    echo 'netstat unavailable'
+fi
+
+echo '[IPv6 state and route errors]'
+if [ -r /var/run/aw1000-ipv6-follow/status.json ]; then
+    jq -c '{choice,mode,upstream:{iface:.upstream.iface,dev:.upstream.dev,address:.upstream.address,
+      gateway:.upstream.gateway,prefixes:.upstream.prefixes}}' /var/run/aw1000-ipv6-follow/status.json 2>/dev/null || true
+fi
+for parent in wan "$cell"; do
+    valid "$parent" || continue
+    for suffix in _v6 v6 6 _6; do
+        iface="$parent$suffix"
+        # Read status only for existing configured clients, without bringing them up.
+        [ "$(get "network.$iface")" = interface ] && interface_status "$iface"
+    done
+done
+ip -6 route show table main 2>/dev/null
+ip -6 route show table 61000 2>/dev/null
+ip -6 rule show 2>/dev/null
+nft list table ip6 aw1000_v6 2>/dev/null || true
+
+echo '[consistency notes]'
+signature=$(cat /var/run/aw1000-mwan-follow/dns-signature 2>/dev/null)
+dns_choice=${signature%%|*}
+case "$signature" in *'|'*) mode=${signature#*|}; mode=${mode%%|*};; *) mode=unknown;; esac
+[ -n "$selected" ] || echo 'No published IPv4 egress; automatic DNS has no usable upstream.'
+if [ "$mode" = auto ] && [ "$dns_choice" != "$selected" ]; then echo 'Automatic DNS choice differs from published egress.'; fi
+[ "$mode" != managed ] || echo 'Custom DNS service owns upstreams; automatic injection is disabled.'
+[ -n "$signature" ] || echo 'DNS signature missing; inspect aw1000-internet/mwan3 service state.'
+
+if [ "$query" = 1 ]; then
+    echo '[optional DNS queries: up to 8 seconds each]'
+    if command -v timeout >/dev/null 2>&1 && command -v nslookup >/dev/null 2>&1; then
+        for resolver in 127.0.0.1 223.5.5.5 119.29.29.29; do
+            printf 'query=%s resolver=%s\n' "$domain" "$resolver"
+            timeout 8 nslookup "$domain" "$resolver" 2>&1
+            printf 'query_exit=%s\n' "$?"
+        done
+    else
+        echo 'Queries skipped: timeout or nslookup unavailable.'
+    fi
+else
+    echo 'No network queries run. Use aw1000-dns-check --query [domain] to opt in.'
+fi
+exit 0

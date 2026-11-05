@@ -1,0 +1,5 @@
+#!/bin/sh
+case "$ACTION" in ifup|ifdown|ifupdate|connected|disconnected)
+    mkdir -p /var/run/aw1000-internet
+    touch /var/run/aw1000-internet/dirty;;
+esac

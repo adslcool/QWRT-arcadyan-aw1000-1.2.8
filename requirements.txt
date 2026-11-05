@@ -1,0 +1,2 @@
+ubi-reader==0.8.16
+dissect.squashfs==1.12

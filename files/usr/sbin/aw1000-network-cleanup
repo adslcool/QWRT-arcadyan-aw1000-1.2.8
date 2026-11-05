@@ -1,0 +1,166 @@
+#!/bin/sh
+# Remove only known OpenClash/SSR hooks restored with an older /etc backup.
+set -eu
+STATE=/etc/aw1000-mod
+mkdir -p "$STATE"
+/usr/sbin/aw1000-network-layout
+if [ ! -f "$STATE/network-cleanup-1.0.8" ]; then
+changed=0
+for s in $(uci -q show firewall | sed -n 's/^firewall\.\([^=]*\)=include$/\1/p'); do
+    path=$(uci -q get "firewall.$s.path" || true)
+    case "$path" in /etc/openclash/*|/usr/share/openclash/*|/var/etc/openclash.include|/var/etc/shadowsocksr.include)
+        uci -q delete "firewall.$s"; changed=1;;
+    esac
+done
+[ "$changed" = 0 ] || uci commit firewall
+for s in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^=]*\)=dnsmasq$/\1/p'); do
+    removed=0
+    for value in 127.0.0.1#7874 ::1#7874; do
+        if uci -q get "dhcp.$s.server" | tr ' ' '\n' | grep -Fxq "$value"; then
+            uci -q del_list "dhcp.$s.server=$value"
+            removed=1
+        fi
+    done
+    if [ "$removed" = 1 ] && [ -z "$(uci -q get "dhcp.$s.server" || true)" ]; then
+        uci set "dhcp.$s.noresolv=0"
+        uci set "dhcp.$s.resolvfile=/tmp/resolv.conf.d/resolv.conf.auto"
+    fi
+done
+uci commit dhcp
+for file in /etc/crontabs/root /etc/dnsmasq.conf; do
+    [ -f "$file" ] || continue
+    sed -i '\|/usr/share/openclash/|d; \|/etc/init.d/openclash|d; \|/etc/openclash/|d; \|/var/etc/openclash.include|d; \|/var/etc/shadowsocksr.include|d' "$file"
+done
+if [ -f /etc/firewall.user ]; then
+    # Replace standalone legacy hooks with a no-op so surrounding if/fi blocks
+    # retain a valid body. Do not rewrite arbitrary user control structures.
+    tmp=$(mktemp)
+    awk '
+      /\/(usr\/share\/openclash\/|etc\/openclash\/|var\/etc\/(openclash|shadowsocksr)\.include)/ {
+        if ($0 ~ /^[[:space:]]*(if|elif|while|until|for|case)[[:space:]]/) print
+        else print ": # 已移除旧代理防火墙钩子"
+        next
+      }
+      { print }
+    ' /etc/firewall.user > "$tmp"
+    cat "$tmp" > /etc/firewall.user
+    rm -f "$tmp"
+fi
+rm -f /tmp/dnsmasq.d/dnsmasq-openclash.conf /etc/rc.d/S*openclash /etc/rc.d/K*openclash
+# modemdata belongs to the newly integrated 4IceG application; keep its config.
+rm -f /etc/config/openclash /etc/config/shadowsocksr /etc/config/modem-data
+rm -f /etc/init.d/openclash /etc/init.d/shadowsocksr
+rm -rf /etc/openclash /etc/ssrplus
+touch "$STATE/network-cleanup-1.0.8"
+fi
+
+if [ ! -f "$STATE/network-cleanup-1.0.11" ]; then
+changed_network=0
+changed_qmodem=0
+changed_dhcp=0
+
+# Remove only the exact DNS recipe documented in the field report. Do not
+# overwrite unrelated user resolvers or third-party DNS forwarders.
+case "$(uci -q get network.lan.dns || true)" in
+    '223.5.5.5 119.29.29.29'|'119.29.29.29 223.5.5.5')
+        uci -q delete network.lan.dns; changed_network=1;;
+esac
+case "$(uci -q get dhcp.lan.dns || true)" in
+    '2400:3200::1 2402:4e00::'|'2402:4e00:: 2400:3200::1')
+        uci -q delete dhcp.lan.dns; changed_dhcp=1;;
+esac
+for value in '6,223.5.5.5,119.29.29.29' '6,119.29.29.29,223.5.5.5'; do
+    if uci -q get dhcp.lan.dhcp_option | tr ' ' '\n' | grep -Fxq "$value"; then
+        uci -q del_list "dhcp.lan.dhcp_option=$value"
+        changed_dhcp=1
+    fi
+done
+for s in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^=]*\)=dnsmasq$/\1/p'); do
+    case "$(uci -q get "dhcp.$s.server" || true)" in
+        '223.5.5.5 119.29.29.29 2400:3200::1 2402:4e00::')
+            uci -q delete "dhcp.$s.server"
+            uci set "dhcp.$s.noresolv=0"
+            uci set "dhcp.$s.resolvfile=/tmp/resolv.conf.d/resolv.conf.auto"
+            changed_dhcp=1;;
+    esac
+done
+
+cell=$(uci -q get mwan3.globals.aw1000_cellular || true)
+case "$cell" in ''|*[!A-Za-z0-9_]*) cell='';; esac
+if [ -n "$cell" ]; then
+    for key in extendprefix extend_prefix; do
+        if [ -n "$(uci -q get "network.${cell}v6.$key" || true)" ]; then
+            uci -q delete "network.${cell}v6.$key"
+            changed_network=1
+        fi
+    done
+    if [ "$(uci -q get "dhcp.${cell}v6" || true)" = dhcp ] && [ "$(uci -q get "dhcp.${cell}v6.interface" || true)" = "${cell}v6" ]; then
+        if [ "$(uci -q get "dhcp.${cell}v6.master" || true)" = 1 ] || [ "$(uci -q get "dhcp.${cell}v6.ra" || true)" = relay ] || [ "$(uci -q get "dhcp.${cell}v6.ndp" || true)" = relay ]; then
+            uci -q delete "dhcp.${cell}v6"
+            changed_dhcp=1
+        fi
+    fi
+fi
+for s in $(uci -q show qmodem | sed -n 's/^qmodem\.\([A-Za-z0-9_]*\)=modem-device$/\1/p'); do
+    [ "$(uci -q get "qmodem.$s.name" | tr A-Z a-z)" = rg500q-ea ] || continue
+    for item in pdp_type:ipv4v6 extend_prefix:0 ra_master:0 do_not_add_dns:1; do
+        key=${item%%:*}
+        value=${item#*:}
+        [ "$(uci -q get "qmodem.$s.$key" || true)" = "$value" ] && continue
+        uci set "qmodem.$s.$key=$value"
+        changed_qmodem=1
+    done
+done
+[ "$changed_network" = 0 ] || uci commit network
+[ "$changed_qmodem" = 0 ] || uci commit qmodem
+[ "$changed_dhcp" = 0 ] || uci commit dhcp
+touch "$STATE/network-cleanup-1.0.11"
+fi
+
+if [ ! -f "$STATE/component-cleanup-1.0.14" ]; then
+    for name in ddns vsftpd xupnpd mcproxy igmpproxy udpxy omcproxy msd_lite rtp2httpd zerotier; do
+        rm -f "/etc/config/$name" "/etc/init.d/$name" /etc/rc.d/S*"$name" /etc/rc.d/K*"$name"
+    done
+    rm -f /usr/sbin/ftpd
+    if [ -f /etc/inetd.conf ]; then
+        sed -i '/^[[:space:]]*ftp[[:space:]]/d' /etc/inetd.conf
+    fi
+    uci -q delete luci.themes.Design || true
+    uci commit luci
+    touch "$STATE/component-cleanup-1.0.14"
+fi
+
+# QSDK reads wps_pbc, while the previous provisioning only wrote wps_pushbutton.
+if [ ! -f "$STATE/button-fix-1.0.16" ] && [ -z "$(uci changes wireless)" ]; then
+    changed=0
+    for ap in aw1000_2g aw1000_5g; do
+        [ "$(uci -q get "wireless.$ap.mode")" = ap ] || continue
+        [ "$(uci -q get "wireless.$ap.wps_pushbutton")" = 1 ] || continue
+        [ -z "$(uci -q get "wireless.$ap.wps_pbc")" ] || continue
+        case "$(uci -q get "wireless.$ap.encryption")" in psk2*) :;; *) continue;; esac
+        uci set "wireless.$ap.wps_pbc=1"
+        changed=1
+    done
+    [ "$changed" = 0 ] || uci commit wireless
+    touch "$STATE/button-fix-1.0.16"
+fi
+
+# 1.1.1 used a 15-round recovery threshold (about 30 seconds). Migrate only
+# that exact project-owned recipe; preserve any explicitly tuned values.
+if [ ! -f "$STATE/line-recovery-1.1.2" ] && [ -z "$(uci changes mwan3)" ]; then
+    changed=0
+    cell=$(uci -q get mwan3.globals.aw1000_cellular || true)
+    case "$cell" in ''|*[!A-Za-z0-9_]*) cell='';; esac
+    for iface in wan "$cell"; do
+        [ -n "$iface" ] || continue
+        [ "$(uci -q get "mwan3.$iface" || true)" = interface ] || continue
+        [ "$(uci -q get "mwan3.$iface.up" || true)" = 15 ] || continue
+        [ "$(uci -q get "mwan3.$iface.interval" || true)" = 2 ] || continue
+        [ "$(uci -q get "mwan3.$iface.recovery_interval" || true)" = 2 ] || continue
+        [ "$(uci -q get "mwan3.$iface.down" || true)" = 2 ] || continue
+        uci set "mwan3.$iface.up=4"
+        changed=1
+    done
+    [ "$changed" = 0 ] || uci commit mwan3
+    touch "$STATE/line-recovery-1.1.2"
+fi

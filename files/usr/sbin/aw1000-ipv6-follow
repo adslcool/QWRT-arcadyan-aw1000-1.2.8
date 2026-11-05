@@ -1,0 +1,505 @@
+#!/bin/sh
+# Both DHCPv6 clients stay online. Only IPv4's published policy selects egress.
+set -eu
+umask 077
+RUN=${AW1000_IPV6_RUN:-/var/run/aw1000-ipv6-follow}
+BOARD=${AW1000_BOARD_FILE:-/tmp/sysinfo/board_name}
+[ "$(cat "$BOARD" 2>/dev/null)" = arcadyan,aw1000 ] || exit 0
+mkdir -p "$RUN"
+exec 8>"$RUN/lock"
+flock -n 8 || exit 75
+set -f
+trap 'exit 143' TERM INT
+# Runtime copies are loaded only by netifd/odhcpd through the scoped preload.
+# Never leave deltas in the ordinary /tmp/.uci session or commit /etc/config.
+BASE_CONFIG=${AW1000_CONFIG_ROOT:-/etc/config}
+runtime_prepare() {
+    mkdir -p "$RUN/config" "$RUN/delta"
+    chmod 700 "$RUN/config" "$RUN/delta"
+    for package in network dhcp; do
+        if [ ! -f "$RUN/config/$package" ] || ! cmp -s "$BASE_CONFIG/$package" "$RUN/config/$package.base"; then
+            command uci -q export "$package" > "$RUN/config/$package.tmp" || return 1
+            mv "$RUN/config/$package.tmp" "$RUN/config/$package"
+            rm -f "$RUN/delta/$package"
+            cp "$BASE_CONFIG/$package" "$RUN/config/$package.base"
+            rm -f "$RUN/signature"
+            touch "$RUN/config-dirty"
+        fi
+    done
+}
+uci() {
+    case " $* " in
+        *' network'*|*' dhcp'*)
+            # The pinned CLI supports -P, not -t. -P deliberately disables
+            # commit. Export merged changes into the private RAM config and
+            # clear only that private delta instead of committing /etc/config.
+            local op="$1" package="${2:-}"
+            if [ "$op" = -q ]; then op="${2:-}"; package="${3:-}"; fi
+            if [ "$op" = commit ]; then
+                case "$package" in network|dhcp) :;; *) return 1;; esac
+                if ! command uci -c "$RUN/config" -P "$RUN/delta" export "$package" > "$RUN/config/$package.next"; then
+                    rm -f "$RUN/config/$package.next"
+                    return 1
+                fi
+                mv "$RUN/config/$package.next" "$RUN/config/$package" || return 1
+                rm -f "$RUN/delta/$package"
+            else
+                command uci -c "$RUN/config" -P "$RUN/delta" "$@"
+            fi;;
+        *) command uci "$@";;
+    esac
+}
+# Do not incorporate another user's uncommitted UCI edits into our runtime
+# snapshot. The regular coordinator will retry after save/revert.
+if [ "${1:-}" != --restore ]; then
+    for package in network dhcp; do
+        [ -z "$(command uci -q changes "$package")" ] || exit 0
+    done
+    runtime_prepare
+fi
+valid() { case "$1" in ''|*[!A-Za-z0-9_]*) return 1;; esac; }
+config_set() {
+    [ "$(uci -q get "$1" || true)" = "$2" ] && return 0
+    uci set "$1=$2" || exit 1
+    return 1
+}
+classes_set() {
+    [ "$(uci -q get network.lan.ip6class || true)" = "$1" ] && return 0
+    uci -q delete network.lan.ip6class || true
+    for class in $1; do uci add_list "network.lan.ip6class=$class" || exit 1; done
+    return 1
+}
+NAT_CHAIN=AW1000_V6_SNAT
+NAT_OWNER=aw1000-ip6tables-snat-v1
+nat_owned() { [ "$(cat "$RUN/nat-owned" 2>/dev/null || true)" = "$NAT_OWNER" ]; }
+nat_cleanup() {
+    # A same-named chain without our marker belongs to someone else.
+    [ -e "$RUN/nat-owned" ] || return 0
+    nat_owned || { echo 'Invalid IPv6 SNAT ownership marker' >&2; return 1; }
+    ip6tables -w 5 -t nat -S POSTROUTING >/dev/null || return 1
+    while ip6tables -w 5 -t nat -C POSTROUTING -s fc00::/7 -j "$NAT_CHAIN" 2>/dev/null; do
+        ip6tables -w 5 -t nat -D POSTROUTING -s fc00::/7 -j "$NAT_CHAIN" || return 1
+    done
+    if ip6tables -w 5 -t nat -S "$NAT_CHAIN" >/dev/null 2>&1; then
+        ip6tables -w 5 -t nat -F "$NAT_CHAIN" || return 1
+        ip6tables -w 5 -t nat -X "$NAT_CHAIN" || return 1
+    fi
+    rm -f "$RUN/nat-owned"
+}
+nat_intact() {
+    if [ "$mode" != nat66 ]; then [ ! -e "$RUN/nat-owned" ]; return; fi
+    nat_owned || return 1
+    ip6tables -w 5 -t nat -C POSTROUTING -s fc00::/7 -j "$NAT_CHAIN" 2>/dev/null || return 1
+    ip6tables -w 5 -t nat -C "$NAT_CHAIN" -s "$ula" -o "$dev" -j SNAT --to-source "$address" 2>/dev/null || return 1
+    nat_rules=$(ip6tables -w 5 -t nat -S "$NAT_CHAIN") || return 1
+    [ "$(printf '%s\n' "$nat_rules" | awk '$1=="-A" { n++ } END { print n+0 }')" = 1 ]
+}
+nat_setup() {
+    # This QWRT kernel has xt_nat/ip6table_nat, but no nft NAT base-chain type.
+    # The stable ULA jump is scoped again to the LAN prefix and selected exit
+    # in our chain. The nft forward guard remains the LAN ingress restriction.
+    command -v ip6tables >/dev/null 2>&1 || { echo 'ip6tables is required for IPv6 SNAT' >&2; return 1; }
+    ip6tables -w 5 -t nat -S POSTROUTING >/dev/null || return 1
+    if [ -e "$RUN/nat-owned" ]; then
+        nat_owned || { echo 'Invalid IPv6 SNAT ownership marker' >&2; return 1; }
+    elif ip6tables -w 5 -t nat -S "$NAT_CHAIN" >/dev/null 2>&1; then
+        echo "IPv6 SNAT chain $NAT_CHAIN already exists without our ownership marker" >&2
+        return 1
+    fi
+    if ! ip6tables -w 5 -t nat -S "$NAT_CHAIN" >/dev/null 2>&1; then
+        ip6tables -w 5 -t nat -N "$NAT_CHAIN" || return 1
+        printf '%s\n' "$NAT_OWNER" > "$RUN/nat-owned" || return 1
+    fi
+    ip6tables -w 5 -t nat -F "$NAT_CHAIN" || return 1
+    ip6tables -w 5 -t nat -A "$NAT_CHAIN" -s "$ula" -o "$dev" -j SNAT --to-source "$address" || return 1
+    if ! ip6tables -w 5 -t nat -C POSTROUTING -s fc00::/7 -j "$NAT_CHAIN" 2>/dev/null; then
+        ip6tables -w 5 -t nat -A POSTROUTING -s fc00::/7 -j "$NAT_CHAIN" || return 1
+    fi
+    nat_intact
+}
+withdraw_ra() {
+    ra_changed=0
+    for setting in ra_default:2 ra_lifetime:0; do
+        ra_key=${setting%%:*}
+        ra_value=${setting#*:}
+        if [ "$(uci -q get "dhcp.lan.$ra_key" || true)" != "$ra_value" ]; then
+            uci set "dhcp.lan.$ra_key=$ra_value" || return 1
+            ra_changed=1
+        fi
+    done
+    if [ "$ra_changed" = 1 ]; then
+        uci commit dhcp || return 1
+        /etc/init.d/odhcpd reload || return 1
+    fi
+}
+publish_state() {
+    published_mode=$1
+    published_error=${2:-}
+    published_backend=none
+    [ "$published_mode" != nat66 ] || published_backend=ip6tables
+    printf '%s' "$plan" | jq --arg choice "$choice" --arg mode "$published_mode" \
+        --arg backend "$published_backend" --arg error "$published_error" \
+        '{choice:$choice,mode:$mode,nat_backend:$backend,error:$error,upstream:.,note:"IPv4 policy only; both DHCPv6 clients stay online"}' > "$RUN/status.json.tmp" || return 1
+    mv "$RUN/status.json.tmp" "$RUN/status.json"
+}
+apply_guard() {
+    guard_mode=$1
+    if nft list table ip6 aw1000_v6 >/dev/null 2>&1 && [ ! -f "$RUN/filter-owned" ]; then
+        echo 'Foreign IPv6 filter table; refusing to replace' >&2; return 1
+    fi
+    {
+        if nft list table ip6 aw1000_v6 >/dev/null 2>&1; then echo 'delete table ip6 aw1000_v6'; fi
+        echo 'table ip6 aw1000_v6 {'
+        echo 'chain forward_guard { type filter hook forward priority -5; policy accept;'
+        printf 'iifname "%s" oifname "%s" return\n' "$lan" "$lan"
+        # QWRT disables CONFIG_NF_TABLES_SET; avoid anonymous interval sets.
+        printf 'iifname "%s" ip6 daddr fc00::/7 return\n' "$lan"
+        printf 'iifname "%s" ip6 daddr fe80::/10 return\n' "$lan"
+        printf 'iifname "%s" ip6 daddr ff00::/8 return\n' "$lan"
+        if [ "$guard_mode" != unavailable ]; then
+            for prefix in $prefixes; do
+                printf 'iifname "%s" oifname "%s" ip6 saddr %s return\n' "$lan" "$dev" "$prefix"
+            done
+            if [ "$guard_mode" = nat66 ]; then
+                printf 'iifname "%s" oifname "%s" ip6 saddr %s return\n' "$lan" "$dev" "$ula"
+            fi
+        fi
+        printf 'iifname "%s" reject with icmpv6 type admin-prohibited\n' "$lan"
+        echo '}'
+        echo '}'
+    } > "$RUN/policy.nft"
+    nft -f "$RUN/policy.nft" || return 1
+    touch "$RUN/filter-owned"
+    nft list table ip6 aw1000_v6 | tr -d '[:space:]' > "$RUN/filter.expected.tmp" || return 1
+    [ -s "$RUN/filter.expected.tmp" ] || return 1
+    mv "$RUN/filter.expected.tmp" "$RUN/filter.expected"
+}
+
+canonical_rules() {
+    awk '
+    function ip(v, x,n,l,r,a,b,j,h,out,p) {
+      if(index(v,":")==0)return v
+      n=split(tolower(v),p,"/");v=p[1]
+      if(index(v,"::")) {
+        split(v,x,"::");l=x[1]==""?0:split(x[1],a,":");r=x[2]==""?0:split(x[2],b,":")
+        for(j=1;j<=8-l-r;j++)a[l+j]="0"
+        for(j=1;j<=r;j++)a[8-r+j]=b[j]
+      } else {if(split(v,a,":")!=8)return v}
+      out=""
+      for(j=1;j<=8;j++){h=a[j];sub(/^0+/,"",h);if(h=="")h="0";out=out (j==1?"":":") h}
+      return out (n==2?"/"p[2]:"")
+    }
+    {
+      if($1=="pref"){pref=$2;start=3}else{pref=$1;sub(/:$/,"",pref);start=2}
+      if(pref!=8893&&pref!=8894&&pref!=8895&&pref!=8900&&pref!=8901&&pref!=8902)next
+      out="pref "pref
+      for(i=start;i<=NF;i++){if($i=="from"&&$(i+1)=="all"){i++;continue};out=out " " ip($i)}
+      print out
+    }' | sort
+}
+actual_rules() { ip -6 rule show | canonical_rules; }
+rules_plan() {
+    {
+        echo 'pref 8893 to ff00::/8 lookup main'
+        echo 'pref 8900 lookup main suppress_prefixlength 0'
+        echo 'pref 8901 lookup 61000'
+        echo 'pref 8902 unreachable'
+        printf '%s\n' "$exemptions" | while read -r kind value; do
+            [ -n "$value" ] || continue
+            case "$kind" in oif) echo "pref 8895 oif $value lookup main";; from) echo "pref 8894 from $value lookup main";; esac
+        done
+    } | canonical_rules > "$RUN/rules-desired"
+}
+rules_intact() { actual_rules > "$RUN/rules-current"; cmp -s "$RUN/rules-current" "$RUN/rules-desired"; }
+rules_apply() {
+    actual_rules > "$RUN/rules-current"
+    if [ ! -f "$RUN/rules-owned-specs" ] && [ -s "$RUN/rules-current" ]; then
+        echo 'Reserved IPv6 rule priority occupied without ownership' >&2; return 1
+    fi
+    cat "$RUN/rules-desired" "$RUN/rules-owned-specs" 2>/dev/null | sort -u > "$RUN/rules-known"
+    while IFS= read -r spec; do
+        grep -Fxq "$spec" "$RUN/rules-known" || { echo "Foreign IPv6 policy rule: $spec" >&2; return 1; }
+    done < "$RUN/rules-current"
+    if [ -f "$RUN/rules-owned-specs" ]; then
+        while IFS= read -r spec; do
+            grep -Fxq "$spec" "$RUN/rules-desired" && continue
+            if grep -Fxq "$spec" "$RUN/rules-current"; then set -- $spec; ip -6 rule del "$@" || return 1; fi
+        done < "$RUN/rules-owned-specs"
+    fi
+    while IFS= read -r spec; do
+        grep -Fxq "$spec" "$RUN/rules-current" && continue
+        { cat "$RUN/rules-owned-specs" 2>/dev/null || true; echo "$spec"; } | sort -u > "$RUN/rules-owned-specs.next"
+        mv "$RUN/rules-owned-specs.next" "$RUN/rules-owned-specs" || return 1
+        set -- $spec; ip -6 rule add "$@" || return 1
+    done < "$RUN/rules-desired"
+    cp "$RUN/rules-desired" "$RUN/rules-owned-specs"
+}
+rules_cleanup() {
+    [ -f "$RUN/rules-owned-specs" ] || return 0
+    actual_rules > "$RUN/rules-current"
+    while IFS= read -r spec; do
+        grep -Fxq "$spec" "$RUN/rules-current" || continue
+        set -- $spec; ip -6 rule del "$@" || return 1
+    done < "$RUN/rules-owned-specs"
+    rm -f "$RUN/rules-owned-specs"
+}
+canonical_routes() {
+    awk 'NF==0{next}{
+      if($1=="unreachable"&&$2=="default"){metric=0;for(i=3;i<NF;i++)if($i=="metric")metric=$(i+1);print "unreachable default metric "metric;next}
+      if($1=="default"){
+        out="default";dev="";via="";src="";metric=0
+        for(i=2;i<NF;i++){if($i=="via")via=$(i+1);if($i=="dev")dev=$(i+1);if($i=="src")src=$(i+1);if($i=="metric")metric=$(i+1)}
+        if(via!="")out=out " via "via
+        out=out " dev "dev
+        if(src!="")out=out " src "src
+        print out " metric "metric;next
+      }
+      if($1=="fe80::/64"){
+        dev="";metric=1024
+        for(i=2;i<NF;i++){if($i=="dev")dev=$(i+1);if($i=="metric")metric=$(i+1)}
+        print "fe80::/64 dev "dev" metric "metric;next
+      }
+      print
+    }' | sort
+}
+actual_routes() { ip -6 route show table 61000 | canonical_routes; }
+routes_plan() {
+    {
+        echo 'unreachable default metric 32767'
+        if [ "$ready" = 1 ]; then
+            [ "$gateway" = :: ] || echo "fe80::/64 dev $dev metric 1024"
+            if [ "$gateway" = :: ]; then printf 'default dev %s' "$dev"
+            else printf 'default via %s dev %s' "$gateway" "$dev"; fi
+            [ -z "$address" ] || printf ' src %s' "$address"
+            echo ' metric 10'
+        fi
+    } | canonical_routes > "$RUN/routes-desired"
+}
+routes_intact() { actual_routes > "$RUN/routes-current"; cmp -s "$RUN/routes-current" "$RUN/routes-desired"; }
+routes_apply() {
+    actual_routes > "$RUN/routes-current"
+    if [ ! -f "$RUN/routes-owned-specs" ] && [ -s "$RUN/routes-current" ]; then
+        echo 'IPv6 table 61000 occupied without ownership' >&2; return 1
+    fi
+    cat "$RUN/routes-desired" "$RUN/routes-owned-specs" 2>/dev/null | sort -u > "$RUN/routes-known"
+    while IFS= read -r spec; do
+        grep -Fxq "$spec" "$RUN/routes-known" || { echo "Foreign IPv6 route in table 61000: $spec" >&2; return 1; }
+    done < "$RUN/routes-current"
+    if [ -f "$RUN/routes-owned-specs" ]; then
+        while IFS= read -r spec; do
+            grep -Fxq "$spec" "$RUN/routes-desired" && continue
+            if grep -Fxq "$spec" "$RUN/routes-current"; then set -- $spec; ip -6 route del table 61000 "$@" || return 1; fi
+        done < "$RUN/routes-owned-specs"
+    fi
+    { echo 'unreachable default metric 32767'; grep -v '^unreachable default' "$RUN/routes-desired" || true; } |
+    while IFS= read -r spec; do
+        grep -Fxq "$spec" "$RUN/routes-current" && continue
+        { cat "$RUN/routes-owned-specs" 2>/dev/null || true; echo "$spec"; } | sort -u > "$RUN/routes-owned-specs.next"
+        mv "$RUN/routes-owned-specs.next" "$RUN/routes-owned-specs" || exit 1
+        set -- $spec; ip -6 route add table 61000 "$@" || exit 1
+    done || return 1
+    cp "$RUN/routes-desired" "$RUN/routes-owned-specs"
+}
+routes_cleanup() {
+    [ -f "$RUN/routes-owned-specs" ] || return 0
+    actual_routes > "$RUN/routes-current"
+    while IFS= read -r spec; do
+        grep -Fxq "$spec" "$RUN/routes-current" || continue
+        set -- $spec; ip -6 route del table 61000 "$@" || return 1
+    done < "$RUN/routes-owned-specs"
+    rm -f "$RUN/routes-owned-specs"
+}
+guard_intact() {
+    [ -f "$RUN/filter-owned" ] && [ -s "$RUN/filter.expected" ] || return 1
+    nft list table ip6 aw1000_v6 2>/dev/null | tr -d '[:space:]' > "$RUN/filter.current"
+    cmp -s "$RUN/filter.current" "$RUN/filter.expected"
+}
+
+
+flush_pending() {
+    [ -s "$RUN/flush-pending" ] || return 0
+    while IFS= read -r old_prefix; do
+        [ -n "$old_prefix" ] || continue
+        if /usr/sbin/aw1000-flow-flush ipv6 "$old_prefix" >/dev/null 2>&1; then
+            grep -Fxv "$old_prefix" "$RUN/flush-pending" > "$RUN/flush-pending.next" || true
+            mv "$RUN/flush-pending.next" "$RUN/flush-pending"
+        else
+            if [ ! -f "$RUN/flush-failed" ]; then logger -t aw1000-ipv6 'IPv6 前缀旧连接清理失败，将重试'; touch "$RUN/flush-failed"; fi
+            return 0
+        fi
+    done < "$RUN/flush-pending"
+    [ -s "$RUN/flush-pending" ] || rm -f "$RUN/flush-pending" "$RUN/flush-failed"
+}
+
+restore() {
+    nat_cleanup || return 1
+    rules_cleanup || return 1
+    routes_cleanup || return 1
+    rm -f "$RUN/rules-owned"
+    if [ -f "$RUN/filter-owned" ]; then
+        nft delete table ip6 aw1000_v6 2>/dev/null || true
+    fi
+    rm -f "$RUN/filter-owned" "$RUN/filter.expected" "$RUN/flow-signature" "$RUN/config-dirty"
+    if [ -f "$RUN/config-owned" ]; then
+        rm -f "$RUN/config/network" "$RUN/config/dhcp" "$RUN/config/network.base" "$RUN/config/dhcp.base"
+        rm -f "$RUN/delta/network" "$RUN/delta/dhcp"
+        ubus -t 3 call network reload '{}' >/dev/null || return 1
+        /etc/init.d/odhcpd reload || return 1
+    fi
+    rm -f "$RUN/signature" "$RUN/selected" "$RUN/status.json" "$RUN/exemptions" "$RUN/config-owned"
+}
+if [ "${1:-}" = --restore ]; then restore; exit $?; fi
+[ "$(uci -q get mwan3.globals.aw1000_enabled || true)" = 1 ] || exit 0
+choice=${1:-}
+rows=${2:-[]}
+parents=$(printf '%s' "$rows" | jq -r '.[] | select(.enabled) | .target')
+selected='{}'
+selected_iface=''
+exemptions=''
+# Discover clients on every pass, including after USB re-enumeration. Never down
+# a standby client. Respect explicit user disabled/auto=0 settings.
+for parent in $parents; do
+    valid "$parent" || continue
+    if [ "$(uci -q get "qmodem.$parent" || true)" = modem-device ]; then
+        alias=$(uci -q get "qmodem.$parent.alias" || true)
+        valid "$alias" && parent=$alias
+    fi
+    for iface in "${parent}_v6" "${parent}v6" "${parent}6" "${parent}_6"; do
+        info=$(ubus -t 3 call "network.interface.$iface" status 2>/dev/null) || continue
+        [ "$(printf '%s' "$info" | jq -r '.proto // empty')" = dhcpv6 ] || continue
+        [ "$(uci -q get "network.$iface.disabled" || true)" != 1 ] || continue
+        [ "$(uci -q get "network.$iface.auto" || true)" != 0 ] || continue
+        if [ "$(printf '%s' "$info" | jq -r '.up or .pending or .autostart')" != true ]; then
+            ubus -t 3 call "network.interface.$iface" up '{}' >/dev/null
+        fi
+        dev=$(printf '%s' "$info" | jq -r '.l3_device // .device // empty')
+        case "$dev" in ''|*[!A-Za-z0-9_.:-]*) :;; *) exemptions="$exemptions
+oif $dev";; esac
+        # QWRT jq is built without ONIGURUMA; use character checks, not test().
+        for address in $(printf '%s' "$info" | jq -r '
+          def ip: type=="string" and contains(":") and
+            (explode|all(.==58 or (.>=48 and .<=57) or (.>=65 and .<=70) or (.>=97 and .<=102)));
+          .["ipv6-address"][]?.address | select(ip and (startswith("2") or startswith("3")))'); do
+            exemptions="$exemptions
+from $address/128"
+        done
+        rm -f "$RUN/stopped-$iface"
+        if [ "$parent" = "$choice" ] && [ "$(printf '%s' "$info" | jq -r '.up')" = true ]; then
+            selected=$info
+            selected_iface=$iface
+            break
+        fi
+    done
+done
+# Validate all tokens before using them in an nft transaction.
+plan=$(printf '%s' "$selected" | jq -cS --arg iface "$selected_iface" '
+ def ip: type=="string" and contains(":") and
+   (explode|all(.==58 or (.>=48 and .<=57) or (.>=65 and .<=70) or (.>=97 and .<=102)));
+ {iface:$iface,dev:(.l3_device // .device // ""),
+  address:([.["ipv6-address"][]? | select((.preferred // 1)>0) | .address | select(ip) | select(startswith("2") or startswith("3"))][0] // ""),
+  gateway:([.route[]? | select(.mask==0 and (.valid // 1)>0) |
+    .nexthop | select(ip) | select(. != "::")][0] // ""),
+  prefixes:([.["ipv6-prefix"][]? | select((.preferred // 1)>0 and (.valid // 1)>0) |
+   select(.address|ip) | select(.mask>=1 and .mask<=64) |
+   {address,mask,class:(.class // $iface)}] | sort_by(.address,.mask))}')
+dev=$(printf '%s' "$plan" | jq -r '.dev')
+address=$(printf '%s' "$plan" | jq -r '.address')
+gateway=$(printf '%s' "$plan" | jq -r '.gateway')
+case "$dev" in ''|*[!A-Za-z0-9_.:-]*) dev='';; esac
+# QModem can publish a bare default before its usable link-local gateway.
+# Prefer an explicit gateway from the live kernel table; a raw-IP cellular
+# device without one is not safe to advertise as an IPv6 Internet path.
+if [ -n "$dev" ] && [ -z "$gateway" ]; then
+    gateway=$(ip -6 route show default dev "$dev" 2>/dev/null | awk '
+      $1=="default" { for (i=1;i<NF;i++) if ($i=="via" && $(i+1) ~ /:/) { print $(i+1); exit } }')
+fi
+case "$gateway" in
+    *:*) case "$gateway" in *[!0-9A-Fa-f:]*) gateway='';; esac;;
+    *) gateway='';;
+esac
+# Point-to-point links legitimately install a device-only default route.
+if [ -n "$dev" ] && [ -z "$gateway" ]; then
+    case "$dev" in ppp*|l2tp*|pptp*) gateway='::';; esac
+    if [ "$choice" = wan ] && [ "$(uci -q get network.wan.proto || true)" = pppoe ]; then gateway='::'; fi
+fi
+plan=$(printf '%s' "$plan" | jq -cS --arg gateway "$gateway" '.gateway=$gateway')
+ready=0
+[ -z "$dev" ] || [ -z "$gateway" ] || ready=1
+ula=$(uci -q get network.globals.ula_prefix || true)
+case "$ula" in [fF][cCdD]*/*) :;; *) ula='';; esac
+if ! printf '%s' "$ula" | grep -Eq '^[fF][cCdD][0-9a-fA-F:]+/[0-9]{1,3}$'; then ula=''; fi
+prefixes=$(printf '%s' "$plan" | jq -r '.prefixes[] | "\(.address)/\(.mask)"')
+mode=unavailable
+[ "$ready" = 0 ] || { if [ -n "$prefixes" ]; then mode=native; elif [ -n "$address" ] && [ -n "$ula" ] && [ "$(uci -q get aw1000.ipv6.nat66_fallback || echo 1)" = 1 ]; then mode=nat66; fi; }
+classes=local
+if [ "$mode" = native ]; then
+    for class in $(printf '%s' "$plan" | jq -r '.prefixes[].class' | sort -u); do
+        valid "$class" && classes="$classes $class"
+    done
+fi
+exemptions=$(printf '%s\n' "$exemptions" | sed '/^$/d' | sort -u)
+flow_signature="$choice|$mode|$ula|$plan|ip6tables-snat-v2"
+signature="$flow_signature|$exemptions"
+lan=$(ubus -t 3 call network.interface.lan status | jq -r '.l3_device // "br-lan"')
+case "$lan" in ''|*[!A-Za-z0-9_.:-]*) exit 1;; esac
+rules_plan
+routes_plan
+old_flow=$(cat "$RUN/flow-signature" 2>/dev/null || true)
+# A standby address update only changes exact router maintenance rules.
+# It must not withdraw RA, recreate SNAT, or reset existing IPv6 sessions.
+if [ "$old_flow" = "$flow_signature" ] && [ ! -f "$RUN/config-dirty" ] &&
+   guard_intact && routes_intact && nat_intact; then
+    if rules_intact || rules_apply; then
+        printf '%s\n' "$signature" > "$RUN/signature"
+        printf '%s\n' "$exemptions" > "$RUN/exemptions"
+        flush_pending
+        publish_state "$mode"
+        exit 0
+    fi
+fi
+trap 'update_status=$?; if [ "$update_status" -ne 0 ]; then
+    set +e
+    withdraw_ra
+    if apply_guard unavailable; then nat_cleanup; fi
+    rm -f "$RUN/signature" "$RUN/selected"
+    publish_state unavailable "IPv6 reconciliation failed (status $update_status); see coordinator log"
+    logger -t aw1000-ipv6 "IPv6 reconciliation failed (status $update_status); default RA withdrawn"
+fi' EXIT
+touch "$RUN/config-owned"
+rm -f "$RUN/signature" "$RUN/selected"
+publish_state unavailable 'IPv6 reconciliation in progress'
+withdraw_ra
+apply_guard unavailable
+if [ "$mode" = nat66 ]; then nat_setup; else nat_cleanup; fi
+rules_apply
+touch "$RUN/rules-owned"
+routes_apply
+apply_guard "$mode"
+network_changed=0
+classes_set "$classes" || network_changed=1
+if [ "$network_changed" = 1 ]; then
+    uci commit network
+    ubus -t 3 call network reload '{}' >/dev/null
+fi
+ra=0
+[ "$mode" = unavailable ] || ra=1800
+changed=0
+config_set dhcp.lan.ra_default 2 || changed=1
+config_set dhcp.lan.ra_lifetime "$ra" || changed=1
+if [ "$changed" = 1 ]; then uci commit dhcp; /etc/init.d/odhcpd reload; fi
+# Delete only sessions sourced from the previous managed LAN prefixes.
+# A repair or standby DHCPv6 update is not an egress change.
+if [ -n "$old_flow" ] && [ "$old_flow" != "$flow_signature" ] && [ -f "$RUN/flow-prefixes" ]; then
+    { cat "$RUN/flush-pending" 2>/dev/null || true; cat "$RUN/flow-prefixes"; } |
+        sed '/^$/d' | sort -u > "$RUN/flush-pending.next"
+    mv "$RUN/flush-pending.next" "$RUN/flush-pending"
+fi
+{ printf '%s\n' "$prefixes"; [ -z "$ula" ] || printf '%s\n' "$ula"; } > "$RUN/flow-prefixes"
+printf '%s\n' "$flow_signature" > "$RUN/flow-signature"
+printf '%s\n' "$signature" > "$RUN/signature"
+printf '%s\n' "$exemptions" > "$RUN/exemptions"
+printf '%s\n' "$choice" > "$RUN/selected"
+rm -f "$RUN/config-dirty"
+flush_pending
+publish_state "$mode"
+logger -t aw1000-ipv6 "Selected $choice IPv6 mode=$mode; DHCPv6 hot standby retained"

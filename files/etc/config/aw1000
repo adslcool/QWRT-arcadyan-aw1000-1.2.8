@@ -1,0 +1,5 @@
+config policy 'internet'
+    option priority 'wired'
+    option base_device 'wan'
+config policy 'ipv6'
+    option nat66_fallback '1'

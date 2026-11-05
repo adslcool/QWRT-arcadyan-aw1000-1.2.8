@@ -1,0 +1,132 @@
+#!/bin/sh
+# Fresh installations only. Retry incomplete Wi-Fi detection without resetting passwords.
+set -eu
+CONF=/etc/aw1000-build.conf
+STATE=/etc/aw1000-mod
+mkdir -p "$STATE"
+chmod 700 "$STATE"
+[ "$(cat /tmp/sysinfo/board_name 2>/dev/null)" = arcadyan,aw1000 ] || exit 1
+[ ! -f "$STATE/provisioned" ] || exit 0
+if [ -f /sysupgrade.tgz ] || [ -f /tmp/sysupgrade.tar ]; then
+    touch "$STATE/provisioned"
+    rm -f "$CONF"
+    logger -t aw1000-mod '保留升级恢复的配置，跳过首次初始化'
+    exit 0
+fi
+[ -r "$CONF" ] || exit 1
+. "$CONF"
+if [ ! -f "$STATE/credentials.done" ]; then
+    hash=$ROOT_PASSWORD_HASH
+    mode=explicit
+    serial=''
+    if [ -z "$hash" ]; then
+        if serial=$(/usr/sbin/aw1000-credentials serial); then
+            password=$(/usr/sbin/aw1000-credentials derive "$serial") || exit 1
+            mode=sn-v3
+        else
+            password=password
+            serial=''
+            mode=fallback
+            logger -t aw1000-mod '未读取到唯一有效机身 SN，首次管理密码使用 password'
+        fi
+        # This QWRT libc supports MD5-crypt, but rejects SHA256/SHA512-crypt.
+        hash=$(printf '%s\n' "$password" | openssl passwd -1 -stdin) || exit 1
+        unset password
+    fi
+    case "$hash" in '$1$'*) :;; *) logger -t aw1000-mod '不支持的管理密码哈希格式'; exit 1;; esac
+    tmp=$(mktemp /etc/shadow.aw1000.XXXXXX)
+    awk -F: -v hash="$hash" 'BEGIN{OFS=":"} $1=="root"{$2=hash} {print}' /etc/shadow > "$tmp"
+    chmod 600 "$tmp"
+    [ "$(awk -F: '$1=="root"{print $2}' "$tmp")" = "$hash" ] || { rm -f "$tmp"; exit 1; }
+    mv "$tmp" /etc/shadow
+    # Persist the original selection; later SN discovery must not misreport the password.
+    printf 'mode=%s\nserial=%s\nhash_format=md5-crypt\n' "$mode" "$serial" > "$STATE/credentials.info"
+    chmod 600 "$STATE/credentials.info"
+    touch "$STATE/credentials.done"
+    logger -t aw1000-mod "管理密码已初始化，来源=$mode，哈希=MD5-crypt"
+fi
+if [ ! -f "$STATE/network.done" ]; then
+    # The image contains the new layout and selected LAN IP already.
+    /usr/sbin/aw1000-network-layout
+    uci set "system.@system[0].hostname=$ROUTER_NAME"
+    uci set 'system.@system[0].timezone=CST-8'
+    uci set 'system.@system[0].zonename=Asia/Shanghai'
+    uci set 'luci.main.lang=zh_cn'
+    uci set 'luci.main.mediaurlbase=/luci-static/argon'
+    uci set 'luci.themes.Argon=/luci-static/argon'
+    uci set 'dhcp.lan.interface=lan'
+    uci set 'dhcp.lan.ignore=0'
+    uci set 'qmodem.main.enable_dial=1'
+    uci set 'qmodem.main.at_tool=0'
+    for s in $(uci show qmodem | sed -n 's/^qmodem\.\([^=]*\)=modem-device$/\1/p'); do
+        uci set "qmodem.$s.use_ubus=1"
+    done
+    # QModem creates the real modem interface after USB enumeration.
+    uci set 'qmodem.usb0.alias=wwan'
+    uci set 'qmodem.usb0.default_metric=20'
+    uci -q delete qmodem.usb0.net_led || :
+    uci -q delete qmodem.usb0.sim_led || :
+    uci -q delete qmodem.pcie0.net_led || :
+    uci -q delete qmodem.pcie0.sim_led || :
+    uci set 'qmodem.pcie0.alias=wwan'
+    # Permit both QModem-created families in the existing NAT zone.
+    for z in $(uci show firewall | sed -n 's/^firewall\.\([^=]*\)=zone$/\1/p'); do
+        [ "$(uci -q get "firewall.$z.name" || :)" = wan ] || continue
+        for n in wan wan_v6 wwan wwan_v6; do
+            uci -q del_list "firewall.$z.network=$n" || :
+            uci add_list "firewall.$z.network=$n"
+        done
+    done
+    # QModem is the only dialer. Do not impose a second manager over it.
+    uci commit system
+    uci commit luci
+    uci commit dhcp
+    uci commit firewall
+    uci commit qmodem
+    uci commit network
+    touch "$STATE/network.done"
+fi
+if [ ! -f "$STATE/wireless.done" ]; then
+    /sbin/wifi config
+    radio24=''
+    radio5=''
+    for r in $(uci show wireless | sed -n 's/^wireless\.\([^=]*\)=wifi-device$/\1/p'); do
+        hw=$(uci -q get "wireless.$r.hwmode" || :)
+        band=$(uci -q get "wireless.$r.band" || :)
+        case "$hw" in
+            *g|*b) radio24=$r;;
+            *a) radio5=$r;;
+            *) case "$band" in 2g) radio24=$r;; 5g) radio5=$r;; esac;;
+        esac
+    done
+    [ -n "$radio24" ] && [ -n "$radio5" ] && [ "$radio24" != "$radio5" ] || exit 1
+    for i in $(uci show wireless | sed -n 's/^wireless\.\([^=]*\)=wifi-iface$/\1/p'); do
+        r=$(uci -q get "wireless.$i.device" || :)
+        case "$r" in "$radio24"|"$radio5") uci delete "wireless.$i";; esac
+    done
+    for r in "$radio24" "$radio5"; do
+        uci set "wireless.$r.disabled=0"
+        uci set "wireless.$r.country=CN"
+        # Retain QSDK-generated hardware mode, channel width and calibration fields.
+    done
+    for pair in "aw1000_2g:$radio24" "aw1000_5g:$radio5"; do
+        i=${pair%%:*}; r=${pair#*:}
+        case "$i" in aw1000_2g) ssid=$SSID_24G;; *) ssid=$SSID_5G;; esac
+        uci set "wireless.$i=wifi-iface"
+        uci set "wireless.$i.device=$r"
+        uci set "wireless.$i.mode=ap"
+        uci set "wireless.$i.network=lan"
+        uci set "wireless.$i.ssid=$ssid"
+        uci set "wireless.$i.encryption=psk2+ccmp"
+        uci set "wireless.$i.key=$WIFI_PASSWORD"
+        uci set "wireless.$i.wps_pushbutton=1"
+        uci set "wireless.$i.wps_pbc=1"
+        uci set "wireless.$i.disabled=0"
+        uci set "wireless.$i.wmm=1"
+    done
+    uci commit wireless
+    touch "$STATE/wireless.done"
+fi
+touch "$STATE/provisioned"
+rm -f "$CONF"
+logger -t aw1000-mod '首次初始化完成：有线 LAN/WAN、蜂窝拨号、双频无线和管理密码已设置'

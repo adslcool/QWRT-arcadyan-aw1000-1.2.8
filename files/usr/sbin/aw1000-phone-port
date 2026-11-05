@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+ports=''
+for s in $(uci -q show qmodem | sed -n 's/^qmodem\.\([A-Za-z0-9_]*\)=modem-device$/\1/p'); do
+    name=$(uci -q get "qmodem.$s.name" | tr '[:upper:]' '[:lower:]') || continue
+    [ "$name" = rg500q-ea ] || continue
+    port=$(uci -q get "qmodem.$s.override_at_port" || :)
+    [ -n "$port" ] || port=$(uci -q get "qmodem.$s.at_port") || continue
+    suffix=${port#/dev/ttyUSB}
+    [ "$suffix" != "$port" ] || continue
+    case "$suffix" in ''|*[!0-9]*) continue;; esac
+    case " $ports " in *" $port "*) :;; *) ports="$ports $port";; esac
+done
+set -- $ports
+[ "$#" = 1 ] || exit 1
+printf '%s\n' "$1"

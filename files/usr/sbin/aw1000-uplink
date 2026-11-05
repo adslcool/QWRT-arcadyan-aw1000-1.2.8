@@ -1,0 +1,146 @@
+#!/bin/sh
+# QModem 2.8 owns dialing. This adapter enrolls its actual logical interface.
+set -eu
+umask 077
+RUN=/var/run/aw1000-internet
+mkdir -p "$RUN"
+exec 8>"$RUN/apply.lock"
+flock -n 8 || exit 0
+CONFIG=${AW1000_CONFIG_ROOT:-/etc/config}
+config_stamp() { sha256sum "$CONFIG/network" "$CONFIG/qmodem" "$CONFIG/mwan3" "$CONFIG/aw1000" "$CONFIG/dhcp" "$CONFIG/firewall"; }
+stamp=$(config_stamp) || exit 1
+[ "$(cat "$RUN/uplink-config-stamp" 2>/dev/null || true)" != "$stamp" ] || exit 0
+get() { uci -q get "$1" || true; }
+valid() { case "$1" in ''|*[!A-Za-z0-9_]*) return 1;; esac; }
+put() {
+    [ "$(get "$1")" = "$2" ] && return 0
+    uci set "$1=$2"
+    changed=1
+}
+drop() {
+    [ -n "$(get "$1")" ] || return 0
+    uci -q delete "$1" || true
+    changed=1
+}
+[ "$(get mwan3.globals.aw1000_enabled)" = 1 ] || exit 0
+for c in network qmodem mwan3 aw1000 dhcp firewall; do
+    [ -z "$(uci changes "$c")" ] || exit 0
+done
+changed=0
+modem=''; port=''; count=0
+for s in $(uci -q show qmodem | sed -n 's/^qmodem\.\([A-Za-z0-9_]*\)=modem-device$/\1/p'); do
+    [ "$(get "qmodem.$s.name" | tr A-Z a-z)" = rg500q-ea ] || continue
+    p=$(get "qmodem.$s.override_at_port")
+    [ -n "$p" ] || p=$(get "qmodem.$s.at_port")
+    case "$p" in /dev/ttyUSB[0-9]*) :;; *) continue;; esac
+    # Slot and live-device sections may describe the same port.
+    [ "$port" != "$p" ] || continue
+    count=$((count+1)); modem=$s; port=$p
+done
+cell=$(get mwan3.globals.aw1000_cellular)
+valid "$cell" || cell=wwan
+if [ "$count" = 1 ]; then
+    alias=$(get "qmodem.$modem.alias")
+    valid "$alias" || alias=$modem
+    for n in $(uci -q show network | sed -n 's/^network\.\([A-Za-z0-9_]*\)=interface$/\1/p'); do
+        if [ "$(get "network.$n.modem_config")" = "$modem" ] && [ "$(get "network.$n.proto")" != dhcpv6 ]; then alias=$n; break; fi
+    done
+    # Layout migration and the dialer agree on these two stable names.
+    [ "$alias" = wwan ] || { logger -t aw1000-internet 'Waiting for managed wwan modem interface'; exit 0; }
+    if [ "$cell" != "$alias" ]; then
+        # Only remove the previously owned tracker, never arbitrary user sections.
+        uci -q delete "mwan3.$cell" || true
+        cell=$alias
+        changed=1
+    fi
+    put mwan3.globals.aw1000_modem "$modem"
+    put "qmodem.$modem.use_ubus" 1
+    # QModem 2.8.10 creates new devices with extend_prefix=1. Keep it as a
+    # DHCPv6 client only; this service owns LAN RA, NAT66 and DNS choice.
+    put "qmodem.$modem.pdp_type" ipv4v6
+    put "qmodem.$modem.extend_prefix" 0
+    put "qmodem.$modem.ra_master" 0
+    put "qmodem.$modem.do_not_add_dns" 1
+    # Fresh images predeclare both links before the modem is enumerated.
+    for name in wwan wwan_v6; do
+        [ "$(get "network.$name")" != interface ] || put "network.$name.modem_config" "$modem"
+    done
+else
+    if [ -n "$(get mwan3.globals.aw1000_modem)" ]; then
+        uci -q delete mwan3.globals.aw1000_modem || true
+        rm -f "$RUN/sim.json" "$RUN/radio.json"
+        changed=1
+    fi
+fi
+put mwan3.globals.aw1000_cellular "$cell"
+put mwan3.aw_cell.interface "$cell"
+if [ "$(get "mwan3.$cell")" != interface ]; then
+    uci set "mwan3.$cell=interface"
+    for option in enabled:1 initial_state:offline family:ipv4 track_method:ping reliability:1 count:1 timeout:1 interval:2 failure_interval:2 recovery_interval:2 down:2 up:4; do
+        uci set "mwan3.$cell.${option%%:*}=${option#*:}"
+    done
+    uci add_list "mwan3.$cell.track_ip=223.5.5.5"
+    uci add_list "mwan3.$cell.track_ip=119.29.29.29"
+    changed=1
+fi
+case "$(get aw1000.internet.priority)" in cellular|cellular_only) wm=20; cm=10;; *) wm=10; cm=20;; esac
+put network.wan.metric "$wm"
+put network.wan_v6.metric "$wm"
+if [ "$(get "network.$cell")" = interface ]; then
+    put "network.$cell.metric" "$cm"
+    put "network.$cell.defaultroute" 1
+fi
+if [ "$(get "network.${cell}_v6")" = interface ]; then
+    put "network.${cell}_v6.metric" "$cm"
+    drop "network.${cell}_v6.extendprefix"
+    drop "network.${cell}_v6.extend_prefix"
+fi
+if [ "$(get "dhcp.${cell}_v6")" = dhcp ] && [ "$(get "dhcp.${cell}_v6.interface")" = "${cell}_v6" ]; then
+    if [ "$(get "dhcp.${cell}_v6.master")" = 1 ] || [ "$(get "dhcp.${cell}_v6.ra")" = relay ] || [ "$(get "dhcp.${cell}_v6.ndp")" = relay ]; then
+        uci -q delete "dhcp.${cell}_v6" || true
+        changed=1
+    fi
+fi
+if [ "$count" = 1 ]; then put "qmodem.$modem.metric" "$cm"; fi
+if [ "$(get qmodem.usb0)" = modem-slot ]; then put qmodem.usb0.default_metric "$cm"; fi
+# QModem is adapted to the requested _v6 suffix. Both families share the zone.
+for z in $(uci -q show firewall | sed -n 's/^firewall\.\([^=]*\)=zone$/\1/p'); do
+    [ "$(get "firewall.$z.name")" = wan ] || continue
+    for n in "$cell" "${cell}_v6"; do
+        case " $(get "firewall.$z.network") " in *" $n "*) :;; *) uci add_list "firewall.$z.network=$n"; changed=1;; esac
+    done
+done
+if [ "$(get network.globals.ula_prefix)" = auto ]; then
+    hex=$(openssl rand -hex 5)
+    ula=$(printf '%s\n' "$hex" | sed 's/^\(..\)\(....\)\(....\)$/fd\1:\2:\3::\/48/')
+    put network.globals.ula_prefix "$ula"
+fi
+if [ "$(get aw1000.ipv6.saved)" != 1 ]; then
+    put aw1000.ipv6.original_classes "$(get network.lan.ip6class)"
+    for key in ra_default ra_lifetime ra dhcpv6 ndp ra_slaac; do
+        value=$(get "dhcp.lan.$key")
+        put "aw1000.ipv6.original_$key" "${value:-unset}"
+    done
+    put aw1000.ipv6.saved 1
+fi
+put dhcp.lan.ra server
+put dhcp.lan.dhcpv6 server
+put dhcp.lan.ndp disabled
+put dhcp.lan.ra_slaac 1
+# Generic flow offload also bypasses normal policy hooks. ECM is guarded separately.
+for key in flow_offloading flow_offloading_hw; do
+    if [ "$(get "aw1000.internet.saved_$key")" = '' ]; then
+        old=$(get "firewall.@defaults[0].$key")
+        put "aw1000.internet.saved_$key" "${old:-unset}"
+    fi
+    put "firewall.@defaults[0].$key" 0
+done
+if [ "$changed" = 1 ]; then
+    for c in network qmodem mwan3 aw1000 dhcp firewall; do
+        [ -z "$(uci -q changes "$c")" ] || uci commit "$c"
+    done
+    touch "$RUN/reload-needed" "$RUN/dirty"
+fi
+
+config_stamp > "$RUN/uplink-config-stamp.tmp"
+mv "$RUN/uplink-config-stamp.tmp" "$RUN/uplink-config-stamp"

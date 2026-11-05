@@ -1,0 +1,46 @@
+#!/bin/sh
+# Start AP push-button configuration only. Never resets, erases or reboots.
+set -u
+RUN=${AW1000_BUTTON_RUN:-/var/run}
+LOCK=${AW1000_BUTTON_LOCK:-/var/lock}
+mkdir -p "$LOCK" "$RUN"
+exec 8>"$LOCK/aw1000-wifi.lock"
+flock -n 8 || { logger -t aw1000-buttons 'WPS: wireless is rebuilding; request skipped'; exit 75; }
+exec 9>"$LOCK/aw1000-wps.lock"
+flock -n 9 || exit 0
+now=$(cut -d. -f1 "${AW1000_BUTTON_UPTIME:-/proc/uptime}" 2>/dev/null)
+case "$now" in ''|*[!0-9]*) now=0;; esac
+last=$(cat "$RUN/aw1000-wps.last" 2>/dev/null)
+case "$last" in ''|*[!0-9]*) last=0;; esac
+[ "$now" -eq 0 ] || [ "$last" -eq 0 ] || [ $((now-last)) -ge 2 ] || exit 0
+printf '%s\n' "$now" > "$RUN/aw1000-wps.last"
+base=$RUN
+utils=${AW1000_WIFI_UTILS:-/lib/wifi/wifi-utils.sh}
+if [ -r "$utils" ]; then
+    # Vendor libraries reference unset variables; isolate their shell options.
+    candidate=$(
+        set +u
+        . "$utils"
+        get_wpad_var_run
+    )
+    case "$candidate" in /*) [ ! -d "$candidate" ] || base=$candidate;; esac
+fi
+count=0
+for dir in "$base"/hostapd-* "$base"/hostapd; do
+    [ -d "$dir" ] || continue
+    for socket in "$dir"/*; do
+        [ -S "$socket" ] || [ -r "$socket" ] || continue
+        iface=${socket##*/}
+        case "$iface" in ath[0-9]*|wlan[0-9]*|phy[0-9]*-ap[0-9]*) :;; *) continue;; esac
+        result=$(hostapd_cli -p "$dir" -i "$iface" wps_pbc 2>/dev/null)
+        case "$result" in *OK*) count=$((count+1));; esac
+    done
+done
+if [ "$count" -eq 0 ]; then
+    for object in $(ubus list 'hostapd.*' 2>/dev/null); do
+        ubus -t 3 call "$object" wps_start '{}' >/dev/null 2>&1 && count=$((count+1))
+    done
+fi
+printf 'ap_count=%s\ntime=%s\n' "$count" "$now" > "$RUN/aw1000-wps.button-state"
+logger -t aw1000-buttons "WPS: PBC submitted to $count APs"
+[ "$count" -gt 0 ]

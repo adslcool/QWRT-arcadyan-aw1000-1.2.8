@@ -1,0 +1,228 @@
+{
+  "version": "1.2.5",
+  "driver_source_version": "0.3.0",
+  "phone_commit": "5a5c87471d090f015a0ecaf1f407a8b0082d8e5c",
+  "profile": "public-qsdk-experimental",
+  "qsdk_commit": "12fde49c2e2f5ed85e27be973a8c2ee9130a586a",
+  "compiler": "aarch64-linux-gnu-gcc (Linaro GCC 7.5-2019.12) 7.5.0",
+  "vermagic": "5.4.213 SMP preempt mod_unload aarch64",
+  "module_sha256": "a14ab2317723f32ac1055f7cd15fb1924f769c34a76fb10916b7ff4f25fc09e8",
+  "driver_package_sha256": "efe9d012a404a1cdc4c30bc9d5cc526fe355fc2b1220d95f3eadba0a06641d48",
+  "config_changes": {
+    "CONFIG_CFG80211_REQUIRE_SIGNED_REGDB": {
+      "original": null,
+      "public": "y"
+    },
+    "CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS": {
+      "original": null,
+      "public": "y"
+    },
+    "CONFIG_CMDLINE_OVERRIDE": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_ARCH_HAVE_LIB_CHACHA": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_ARCH_HAVE_LIB_POLY1305": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_BLAKE2S": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_CHACHA20": {
+      "original": "n",
+      "public": "y"
+    },
+    "CONFIG_CRYPTO_CURVE25519": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_KPP": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_BLAKE2S": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_CHACHA": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_CHACHA20POLY1305": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_CHACHA_GENERIC": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_CURVE25519": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_CURVE25519_GENERIC": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_POLY1305": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_POLY1305_GENERIC": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_LIB_POLY1305_RSIZE": {
+      "original": "9",
+      "public": null
+    },
+    "CONFIG_CRYPTO_POLY1305": {
+      "original": "n",
+      "public": "y"
+    },
+    "CONFIG_CRYPTO_POLY1305_NEON": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_CRYPTO_RSA": {
+      "original": "n",
+      "public": "y"
+    },
+    "CONFIG_DM_INLINE_CRYPT": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_GCC_PLUGINS": {
+      "original": "n",
+      "public": null
+    },
+    "CONFIG_LEDS_LP5569": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_LRU_GEN": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_LRU_GEN_ENABLED": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_LRU_GEN_STATS": {
+      "original": "n",
+      "public": null
+    },
+    "CONFIG_MMC_SDHCI_MSM_ICE_PER_PART_DUN": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_MTD_QCOM_SMEM_PARTS": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_NR_LRU_GENS": {
+      "original": "7",
+      "public": null
+    },
+    "CONFIG_NTFS3_64BIT_CLUSTER": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_NTFS3_FS": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_NTFS3_FS_POSIX_ACL": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_NTFS3_LZX_XPRESS": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_PGB_QUICK_PATH": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_PKCS7_MESSAGE_PARSER": {
+      "original": "n",
+      "public": "y"
+    },
+    "CONFIG_PKCS7_TEST_KEY": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_PLUGIN_HOSTCC": {
+      "original": "\"g++\"",
+      "public": "\"\""
+    },
+    "CONFIG_QCOM_SOC_NETSTANDBY": {
+      "original": "n",
+      "public": null
+    },
+    "CONFIG_QTI_HW_KEY": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_SECONDARY_TRUSTED_KEYRING": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_SENDFILE_PATCH": {
+      "original": "y",
+      "public": null
+    },
+    "CONFIG_SIGNED_PE_FILE_VERIFICATION": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_SYSTEM_DATA_VERIFICATION": {
+      "original": null,
+      "public": "y"
+    },
+    "CONFIG_SYSTEM_EXTRA_CERTIFICATE": {
+      "original": null,
+      "public": "n"
+    },
+    "CONFIG_SYSTEM_TRUSTED_KEYRING": {
+      "original": "n",
+      "public": "y"
+    },
+    "CONFIG_SYSTEM_TRUSTED_KEYS": {
+      "original": null,
+      "public": "\"\""
+    },
+    "CONFIG_TIERS_PER_GEN": {
+      "original": "4",
+      "public": null
+    },
+    "CONFIG_WIREGUARD": {
+      "original": "m",
+      "public": null
+    },
+    "CONFIG_WIREGUARD_DEBUG": {
+      "original": "n",
+      "public": null
+    }
+  },
+  "original_image_sha256": "2cf34abbdeff69411f4fa70ed000de28ea83165586441f8315eb75ea25344d9c",
+  "exports_parsed": 8879,
+  "imports_checked": 60,
+  "kallsyms_address_checks": 52,
+  "struct_module_size": 768,
+  "original_struct_module_size": 768,
+  "original_Module_symvers_available": false,
+  "modversions": false,
+  "final_modpost_missing_symbol_warnings": false,
+  "hardware_verified": false,
+  "abi_compatibility_verified": false
+}

@@ -1,0 +1,142 @@
+#!/bin/sh
+# One-time rename of the project's managed links, preserving LAN/PPPoE secrets.
+set -eu
+umask 077
+STATE=${AW1000_LAYOUT_STATE:-/etc/aw1000-mod}
+CONFIG=${AW1000_CONFIG_ROOT:-/etc/config}
+BOARD=${AW1000_BOARD_FILE:-/tmp/sysinfo/board_name}
+[ "$(cat "$BOARD" 2>/dev/null)" = arcadyan,aw1000 ] || exit 1
+mkdir -p "$STATE"
+[ ! -f "$STATE/network-layout-1.0.14.done" ] || exit 0
+exec 9>"$STATE/network-layout.lock"
+flock -x 9
+[ ! -f "$STATE/network-layout-1.0.14.done" ] || exit 0
+get() { uci -q get "$1" || true; }
+valid() { case "$1" in ''|*[!A-Za-z0-9_]*) return 1;; esac; }
+configs='network qmodem mwan3 dhcp firewall'
+for config in $configs; do
+    [ -z "$(uci changes "$config")" ] || { logger -t aw1000-layout "Unapplied $config changes; network rename deferred"; exit 1; }
+done
+old_cell=$(get mwan3.globals.aw1000_cellular)
+valid "$old_cell" || old_cell=cellular
+case "$old_cell" in wan|wan_v6|wan6|lan|loopback) exit 1;; esac
+aliases='cellular wwan0'
+if [ "$old_cell" != wwan ]; then aliases="$old_cell $aliases"; fi
+for modem in $(uci -q show qmodem | sed -n 's/^qmodem\.\([A-Za-z0-9_]*\)=modem-device$/\1/p'); do
+    [ "$(get "qmodem.$modem.name" | tr A-Z a-z)" = rg500q-ea ] || continue
+    alias=$(get "qmodem.$modem.alias")
+    if valid "$alias" && [ "$alias" != wwan ]; then
+        case "$alias" in lan|wan|wan6|wan_v6|loopback) exit 1;; esac
+        aliases="$aliases $alias"
+    fi
+    for section in $(uci -q show network | sed -n 's/^network\.\([A-Za-z0-9_]*\)=interface$/\1/p'); do
+        [ "$(get "network.$section.modem_config")" = "$modem" ] || continue
+        [ "$(get "network.$section.proto")" = dhcpv6 ] || [ "$section" = wwan ] || aliases="$aliases $section"
+    done
+done
+stage=$(mktemp -d "$STATE/layout-transaction.XXXXXX")
+backup="$STATE/network-layout-1.0.14-backup"
+mkdir -p "$backup"
+for config in $configs; do
+    cp -p "$CONFIG/$config" "$stage/$config"
+    [ -f "$backup/$config" ] || cp -p "$CONFIG/$config" "$backup/$config"
+done
+finished=0
+cleanup() {
+    if [ "$finished" = 0 ]; then
+        for config in $configs; do
+            uci -q revert "$config" || true
+            cp -p "$stage/$config" "$CONFIG/$config"
+        done
+    fi
+    rm -rf "$stage"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+rename_link() {
+    old=$1; new=$2
+    [ "$old" != "$new" ] || return 0
+    [ "$(get "network.$old")" = interface ] || return 0
+    if [ -n "$(get "network.$new")" ]; then
+        logger -t aw1000-layout "Both $old and $new exist; refusing to discard interface settings"
+        return 1
+    fi
+    uci rename "network.$old=$new"
+}
+rename_link wan6 wan_v6
+for alias in $(printf '%s\n' $aliases | sort -u); do
+    [ "$alias" != wwan ] || continue
+    case "$alias" in lan|wan|wan6|wan_v6|wwan_v6|loopback)
+        logger -t aw1000-layout 'Refusing to rename a reserved interface as mobile'
+        exit 1;;
+    esac
+    rename_link "$alias" wwan
+    for suffix in v6 6 _6 _v6; do
+        rename_link "$alias$suffix" wwan_v6
+        [ "$(get "dhcp.$alias$suffix")" != dhcp ] || uci -q delete "dhcp.$alias$suffix"
+    done
+    [ "$(get "mwan3.$alias")" != interface ] || uci -q delete "mwan3.$alias"
+done
+uci set network.br_lan=device
+uci set network.br_lan.name=br-lan
+uci set network.br_lan.type=bridge
+uci -q delete network.br_lan.ports || true
+ports='eth0 eth1 eth2 eth3';wired_base=eth4
+# A delayed provisioning retry must not restore old physical names after S18.
+if grep -q '^mode=named$' "${AW1000_PORTS_RUN:-/var/run/aw1000-ports}/status" 2>/dev/null; then
+    ports='lan1 lan2 lan3 lan4';wired_base=wan
+fi
+for port in $ports; do uci add_list "network.br_lan.ports=$port"; done
+uci set network.lan.device=br-lan
+uci -q delete network.lan.ifname || true
+[ "$(get network.wan)" = interface ] || uci set network.wan=interface
+[ -n "$(get network.wan.proto)" ] || uci set network.wan.proto=dhcp
+vlan=$(get aw1000.internet.vlan)
+case "$vlan" in ''|*[!0-9]*) uci set "network.wan.device=$wired_base";; *) uci set "network.wan.device=$wired_base.$vlan";; esac
+uci -q delete network.wan.ifname || true
+uci set network.wan_v6=interface
+uci set network.wan_v6.proto=dhcpv6
+uci set network.wan_v6.device=@wan
+uci set network.wan_v6.reqprefix=auto
+uci -q delete network.wan_v6.ifname || true
+[ "$(get network.wwan)" = interface ] || uci set network.wwan=interface
+[ -n "$(get network.wwan.proto)" ] || uci set network.wwan.proto=dhcp
+uci set network.wwan.defaultroute=1
+uci -q delete network.wwan.ifname || true
+uci set network.wwan_v6=interface
+uci set network.wwan_v6.proto=dhcpv6
+uci set network.wwan_v6.device=@wwan
+uci set network.wwan_v6.reqprefix=auto
+uci -q delete network.wwan_v6.ifname || true
+for modem in $(uci -q show qmodem | sed -n 's/^qmodem\.\([A-Za-z0-9_]*\)=modem-device$/\1/p'); do
+    [ "$(get "qmodem.$modem.name" | tr A-Z a-z)" = rg500q-ea ] || continue
+    uci set "qmodem.$modem.alias=wwan"
+    uci set "network.wwan.modem_config=$modem"
+    uci set "network.wwan_v6.modem_config=$modem"
+done
+uci set qmodem.usb0.alias=wwan
+[ "$(get qmodem.pcie0)" != modem-slot ] || uci set qmodem.pcie0.alias=wwan
+uci set mwan3.globals.aw1000_cellular=wwan
+uci set mwan3.aw_cell.interface=wwan
+for zone in $(uci -q show firewall | sed -n 's/^firewall\.\([^=]*\)=zone$/\1/p'); do
+    [ "$(get "firewall.$zone.name")" = wan ] || continue
+    for old in wan6 cellular cellularv6 wwan0 wwan0v6 $aliases; do
+        uci -q del_list "firewall.$zone.network=$old" || true
+        for suffix in v6 6 _6 _v6; do uci -q del_list "firewall.$zone.network=$old$suffix" || true; done
+    done
+    for name in wan wan_v6 wwan wwan_v6; do
+        uci -q del_list "firewall.$zone.network=$name" || true
+        uci add_list "firewall.$zone.network=$name"
+    done
+done
+for old in wan6 cellular cellularv6 wwan0v6; do
+    [ "$(get "dhcp.$old")" != dhcp ] || uci -q delete "dhcp.$old"
+done
+for config in $configs; do uci commit "$config"; done
+RUN=${AW1000_INTERNET_RUN:-/var/run/aw1000-internet}
+mkdir -p "$RUN"
+touch "$RUN/reload-needed" "$RUN/dirty"
+touch "$STATE/network-layout-1.0.14.done"
+finished=1
+logger -t aw1000-layout 'Managed interfaces: br-lan, wan/wan_v6, wwan/wwan_v6'

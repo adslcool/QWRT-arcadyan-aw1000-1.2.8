@@ -1,0 +1,188 @@
+#!/bin/sh /etc/rc.common
+# Rename only the five AW1000 Ethernet ports, before netifd starts.
+START=18
+STOP=89
+EXTRA_COMMANDS="status"
+
+ports_sync_config() {
+    AW1000_PORTS_MODE="$1" AW1000_PORTS_CONFIG="$CONFIG" AW1000_PORTS_RUN="$RUN" \
+    "${AW1000_PORTS_LUA:-lua}" - <<'LUA'
+local uci=require('uci')
+local config=os.getenv('AW1000_PORTS_CONFIG')
+local mode=os.getenv('AW1000_PORTS_MODE')
+local run=os.getenv('AW1000_PORTS_RUN')
+local c=uci.cursor(config,run..'/delta')
+local map={}
+for n=0,4 do
+    local old='eth'..n;local new=n==4 and 'wan' or 'lan'..(n+1)
+    local target=mode=='named' and new or old
+    map[old]=target;map[new]=target
+end
+local function device(s)
+    if type(s)=='table' then
+        local out={};for i,v in ipairs(s) do out[i]=device(v) end;return out
+    end
+    if type(s)~='string' then return s end
+    return (s:gsub('[^%s]+',function(word)
+        local base,suffix=word:match('^([^%.]+)(.*)$')
+        return map[base] and (map[base]..suffix) or word
+    end))
+end
+local function same(a,b)
+    if type(a)~=type(b) then return false end
+    if type(a)~='table' then return a==b end
+    if #a~=#b then return false end
+    for i,v in ipairs(a) do if v~=b[i] then return false end end
+    return true
+end
+local changed={}
+local function put(cfg,section,key,value)
+    local next=device(value)
+    if not same(next,value) then
+        assert(c:set(cfg,section,key,next),'cannot stage '..cfg..'.'..section..'.'..key)
+        changed[cfg]=true
+    end
+end
+assert(c:load('network'),'network configuration unavailable')
+c:foreach('network',nil,function(s)
+    if s['.type']=='interface' or s['.type']=='device' then
+        for _,key in ipairs({'device','ifname','ports'}) do if s[key] then put('network',s['.name'],key,s[key]) end end
+        if s['.type']=='device' and s.name then put('network',s['.name'],'name',s.name) end
+    end
+end)
+assert(c:load('aw1000'),'AW1000 policy unavailable')
+local base=c:get('aw1000','internet','base_device')
+if base then put('aw1000','internet','base_device',base) end
+if c:load('arpbind') then
+    c:foreach('arpbind','arpbind',function(s) if s.ifname then put('arpbind',s['.name'],'ifname',s.ifname) end end)
+end
+if c:load('system') then
+    c:foreach('system','led',function(s) if s.dev then put('system',s['.name'],'dev',s.dev) end end)
+end
+for _,cfg in ipairs({'network','aw1000','arpbind','system'}) do
+    if changed[cfg] then assert(c:commit(cfg),'cannot commit '..cfg) end
+end
+local path=os.getenv('AW1000_PORTS_BOARD_JSON') or '/etc/board.json'
+local f=io.open(path,'r')
+if f then
+    local json=require('luci.jsonc');local data=json.parse(f:read('*a'));f:close()
+    if data and type(data.network)=='table' then
+        for _,section in pairs(data.network) do
+            if type(section)=='table' then
+                for _,key in ipairs({'device','ifname','ports'}) do if section[key] then section[key]=device(section[key]) end end
+            end
+        end
+        -- The vendor board defaults put all five ports in LAN and use wwan0
+        -- as WAN. Keep preinit defaults intact, but publish the actual split.
+        local lan={};for n=1,4 do lan[n]=mode=='named' and ('lan'..n) or ('eth'..(n-1)) end
+        data.network.lan=data.network.lan or {};data.network.wan=data.network.wan or {}
+        data.network.lan.ifname=table.concat(lan,' ')
+        data.network.wan.ifname=mode=='named' and 'wan' or 'eth4'
+        local out=assert(io.open(path..'.aw1000-new','w'));assert(out:write(json.stringify(data)));assert(out:close())
+        assert(os.rename(path..'.aw1000-new',path))
+    end
+end
+LUA
+}
+
+start() (
+    umask 077
+    RUN=${AW1000_PORTS_RUN:-/var/run/aw1000-ports}
+    CONFIG=${AW1000_CONFIG_ROOT:-/etc/config}
+    STATE=${AW1000_LAYOUT_STATE:-/etc/aw1000-mod}
+    SYS=${AW1000_PORTS_SYS:-/sys/class/net}
+    BOARD=${AW1000_BOARD_FILE:-/tmp/sysinfo/board_name}
+    [ "$(cat "$BOARD" 2>/dev/null)" = arcadyan,aw1000 ] || return 1
+    mkdir -p "$RUN/delta" "$STATE" || return 1
+    exec 9>"$RUN/lock"
+    flock -x 9 || return 1
+    if pidof netifd >/dev/null 2>&1; then
+        logger -t aw1000-ports 'Refusing live port renaming; reboot to apply'
+        return 1
+    fi
+    configs=''
+    for cfg in network aw1000 arpbind system; do
+        [ -f "$CONFIG/$cfg" ] || continue
+        [ -z "$(uci -q changes "$cfg")" ] || { logger -t aw1000-ports 'Uncommitted configuration; port rename deferred'; return 1; }
+        configs="$configs $cfg"
+    done
+    stage=$(mktemp -d "$RUN/transaction.XXXXXX") || return 1
+    backup="$STATE/ports-layout-1.0.16-backup"
+    mkdir -p "$backup" || return 1
+    for cfg in $configs; do
+        cp -p "$CONFIG/$cfg" "$stage/$cfg" || return 1
+        [ -f "$backup/$cfg" ] || cp -p "$CONFIG/$cfg" "$backup/$cfg" || return 1
+    done
+    trap 'rm -rf "$stage"' EXIT
+    pairs='eth0:lan1 eth1:lan2 eth2:lan3 eth3:lan4 eth4:wan'
+    old_count=0;new_count=0
+    for attempt in 0 1 2 3 4; do
+        old_count=0;new_count=0
+        for pair in $pairs; do
+            [ ! -e "$SYS/${pair%%:*}/ifindex" ] || old_count=$((old_count+1))
+            [ ! -e "$SYS/${pair#*:}/ifindex" ] || new_count=$((new_count+1))
+        done
+        if [ "$old_count" -eq 5 ] || [ "$new_count" -eq 5 ]; then break;fi
+        sleep 1
+    done
+    mode=legacy;reason='ports-not-ready';changed='';up_ports=''
+    rollback_ports() {
+        for pair in $changed; do
+            old=${pair%%:*};new=${pair#*:}
+            if [ -e "$SYS/$new/ifindex" ] && [ ! -e "$SYS/$old/ifindex" ]; then
+                ip link set dev "$new" down >/dev/null 2>&1
+                ip link set dev "$new" name "$old" >/dev/null 2>&1 || return 1
+            fi
+        done
+        for old in $up_ports; do ip link set dev "$old" up >/dev/null 2>&1 || true; done
+    }
+    if [ "$new_count" -eq 5 ] && [ "$old_count" -eq 0 ]; then
+        mode=named;reason='already-named'
+    elif [ "$old_count" -eq 5 ] && [ "$new_count" -eq 0 ]; then
+        safe=1
+        for pair in $pairs; do
+            old=${pair%%:*}
+            [ "$(cat "$SYS/$old/type" 2>/dev/null)" = 1 ] || safe=0
+            [ ! -e "$SYS/$old/bridge" ] && [ ! -L "$SYS/$old/master" ] || safe=0
+            flags=$(cat "$SYS/$old/flags" 2>/dev/null) || flags=0
+            [ $((flags & 1)) -eq 0 ] || up_ports="$up_ports $old"
+        done
+        if [ "$safe" -eq 1 ]; then
+            mode=named;reason='renamed-before-netifd'
+            for pair in $pairs; do
+                old=${pair%%:*};new=${pair#*:}
+                if ! ip link set dev "$old" down || ! ip link set dev "$old" name "$new"; then
+                    mode=legacy;reason='rename-failed'
+                    break
+                fi
+                changed="$pair $changed"
+            done
+            if [ "$mode" = named ]; then
+                for old in $up_ports; do
+                    for pair in $pairs; do [ "${pair%%:*}" != "$old" ] || ip link set dev "${pair#*:}" up >/dev/null 2>&1; done
+                done
+            elif ! rollback_ports; then
+                logger -t aw1000-ports 'Port rollback failed; refusing to guess device identities'
+                return 1
+            fi
+        else reason='ports-in-use';fi
+    elif [ "$old_count" -eq 5 ]; then reason='target-name-conflict';fi
+    if ! ports_sync_config "$mode"; then
+        for cfg in $configs; do cp -p "$stage/$cfg" "$CONFIG/$cfg"; done
+        if [ -n "$changed" ]; then rollback_ports || return 1; fi
+        mode=legacy;reason='configuration-failed'
+        ports_sync_config legacy || { logger -t aw1000-ports 'Configuration fallback failed'; return 1; }
+    fi
+    {
+        printf 'mode=%s\nreason=%s\n' "$mode" "$reason"
+        for pair in $pairs; do
+            if [ "$mode" = named ]; then printf '%s=%s\n' "${pair%%:*}" "${pair#*:}";else printf '%s=%s\n' "${pair%%:*}" "${pair%%:*}";fi
+        done
+    } > "$RUN/status.new"
+    mv "$RUN/status.new" "$RUN/status"
+    logger -t aw1000-ports "mode=$mode reason=$reason"
+    [ "$mode" = named ]
+)
+
+stop() { return 0; }
+status() { cat "${AW1000_PORTS_RUN:-/var/run/aw1000-ports}/status"; }

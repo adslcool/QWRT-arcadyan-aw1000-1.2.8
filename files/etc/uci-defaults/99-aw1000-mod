@@ -1,0 +1,42 @@
+#!/bin/sh
+# Running during uci-defaults preserves awareness of restored sysupgrade settings.
+. /lib/functions.sh
+# Restore backups may omit the service account and retain enabled=0.
+# Apply the requested defaults once; later user changes remain untouched.
+if [ -x /usr/bin/librespeed-go ]; then
+    gid=$(group_add_next librespeed)
+    user_exists librespeed || user_add librespeed '' "$gid" LibreSpeed /var/run/librespeed-go /bin/false
+    mkdir -p /etc/aw1000-mod
+    if [ ! -f /etc/aw1000-mod/librespeed-defaults-1.2.1 ]; then
+        uci set librespeed-go.config.enabled='1'
+        uci set librespeed-go.config.listen_port='8989'
+        uci set librespeed-go.config.database_type='none'
+        uci commit librespeed-go
+        /etc/init.d/librespeed-go enable
+        touch /etc/aw1000-mod/librespeed-defaults-1.2.1
+    fi
+fi
+rm -f /etc/banner
+if [ "$(uci -q get 'dropbear.@dropbear[0].BannerFile')" = /etc/banner ]; then
+    uci -q delete 'dropbear.@dropbear[0].BannerFile'
+    uci commit dropbear
+fi
+for option in $(uci -q show qmodem | sed -n "s/^qmodem\.\([^.=]*\)\.\(net_led\|sim_led\)=.*/\1.\2/p"); do
+    uci -q delete "qmodem.$option"
+done
+uci -q commit qmodem
+cleanup_front_led() {
+    local sysfs
+    config_get sysfs "$1" sysfs
+    case "$sysfs" in ipq::led[0-9]|ipq::led1[0-2]) uci -q delete "system.$1";; esac
+}
+config_load system
+config_foreach cleanup_front_led led
+uci -q commit system
+uci -q set "fxs.main.led=ipq::led12"
+uci -q set "fxs.main.led_ready=on"
+uci -q set "fxs.main.led_ringing=on"
+uci -q set "fxs.main.led_offhook=on"
+uci -q commit fxs
+/usr/sbin/aw1000-network-cleanup
+/usr/sbin/aw1000-provision

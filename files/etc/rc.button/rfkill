@@ -1,0 +1,4 @@
+#!/bin/sh
+logger -t aw1000-buttons "event rfkill action=${ACTION:-unknown} seen=${SEEN:-0}"
+[ "$ACTION" = released ] || exit 0
+exec /usr/sbin/aw1000-wifi-toggle

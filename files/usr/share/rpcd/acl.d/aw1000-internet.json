@@ -1,0 +1,22 @@
+{
+  "aw1000-internet": {
+    "description": "AW1000 上网设置",
+    "read": {
+      "ubus": {
+        "aw1000.internet": [
+          "status",
+          "scan"
+        ]
+      }
+    },
+    "write": {
+      "ubus": {
+        "aw1000.internet": [
+          "apply",
+          "confirm",
+          "apply_priority"
+        ]
+      }
+    }
+  }
+}

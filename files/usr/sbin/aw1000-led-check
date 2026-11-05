@@ -1,0 +1,62 @@
+#!/bin/sh
+# Read-only evidence for the AW1000 panel and its separate phone lamp.
+echo '[version]'
+cat /etc/aw1000-mod-version /etc/aw1000-build-date 2>/dev/null
+grep '^DISTRIB_\(DESCRIPTION\|REVISION\)=' /etc/openwrt_release
+echo '[panel service/state]'
+/etc/init.d/aw1000-leds status
+cat /var/run/aw1000-leds.json 2>/dev/null
+echo
+echo '[cellular tracker]'
+cell=$(uci -q get mwan3.globals.aw1000_cellular)
+case "$cell" in ''|*[!A-Za-z0-9_]*) echo 'not enrolled';;
+    *) echo "interface=$cell"; cat "/var/run/mwan3track/$cell/STATUS" 2>/dev/null;;
+esac
+echo '[LED sysfs]'
+for d in /sys/class/leds/ipq::led*; do
+    [ -d "$d" ] || continue
+    echo "${d##*/}"
+    for field in brightness max_brightness trigger; do
+        printf '%s=' "$field"; cat "$d/$field" 2>/dev/null
+    done
+done
+echo '[phone service/state]'
+/etc/init.d/fxsd status
+for key in enabled led led_ready led_ringing led_offhook; do
+    printf '%s=' "$key"; uci -q get "fxs.main.$key"
+done
+sed -n '/^state=/p; /^offhook=/p' /var/run/fxsd.state 2>/dev/null
+echo '[running DT: bytes and big-endian cells]'
+dt=/sys/firmware/devicetree/base/soc/ledc@191E000
+for prop in qti,ledc_blink_indices qti,ledc_blink_idx_src_pair qti,tcsr_ledc_values led0/active; do
+    [ -f "$dt/$prop" ] || continue
+    echo "$prop"
+    lua - "$dt/$prop" <<'LUA'
+local f,err=io.open(arg[1],'rb')
+if not f then io.write('unreadable: ',tostring(err),'\n');return end
+local data=f:read('*a') or '';f:close()
+if #data==0 then io.write('(empty boolean property)\n');return end
+local hex,cells={},{}
+for i=1,#data do hex[#hex+1]=string.format('%02x',data:byte(i)) end
+for i=1,#data-3,4 do
+    local a,b,c,d=data:byte(i,i+3)
+    cells[#cells+1]=string.format('%.0f',((a*256+b)*256+c)*256+d)
+end
+io.write('hex=',table.concat(hex,' '),'\n')
+if #data%4==0 then io.write('cells=',table.concat(cells,' '),'\n') end
+LUA
+done
+echo '[recent panel errors]'
+logread -e aw1000-leds | tail -n 15
+echo '[Ethernet naming]'
+cat /var/run/aw1000-ports/status 2>/dev/null
+echo '[button actions]'
+cat /var/run/aw1000-wifi.button-state /var/run/aw1000-wps.button-state 2>/dev/null
+echo '[QSDK WPS settings]'
+for ap in aw1000_2g aw1000_5g; do
+    for key in disabled wps_pushbutton wps_pbc; do
+        printf '%s.%s=' "$ap" "$key";uci -q get "wireless.$ap.$key"
+    done
+done
+logread -e aw1000-buttons | tail -n 20
+exit 0

@@ -1,0 +1,283 @@
+#!/bin/sh
+# Follow the installed fw3 policy, never infer selection from main-table metrics.
+set -eu
+umask 077
+RUN=/var/run/aw1000-mwan-follow
+mkdir -p "$RUN"
+get() { uci -q get "$1" || true; }
+valid() { case "$1" in ''|*[!A-Za-z0-9_]*) return 1;; esac; }
+ecm_guard() {
+    # Keep the NSS drivers, but suspend ECM acceleration while managed failover is active.
+    # Stopping creation plus defunct_all also covers already accelerated connections.
+    dirty=0
+    for f in front_end_ipv4_stop front_end_ipv6_stop; do
+        p=/sys/kernel/debug/ecm/$f
+        [ -f "$p" ] || continue
+        value=$(cat "$p")
+        [ -f "$RUN/ecm-$f" ] || printf '%s\n' "$value" > "$RUN/ecm-$f"
+        if [ "$value" != 1 ]; then echo 1 > "$p"; dirty=1; fi
+    done
+    if [ "$dirty" = 1 ] && [ -f /sys/kernel/debug/ecm/ecm_db/defunct_all ]; then
+        echo 1 > /sys/kernel/debug/ecm/ecm_db/defunct_all
+    fi
+}
+dns_cleanup() {
+    changed=0
+    if [ -f "$RUN/dns-files" ]; then
+        while IFS= read -r file; do
+            case "$file" in /tmp/dnsmasq*.d/aw1000-mwan.conf)
+                [ ! -f "$file" ] || { rm -f "$file"; changed=1; };;
+            esac
+        done < "$RUN/dns-files"
+    fi
+    rm -f "$RUN/dns-files" "$RUN/dns-signature"
+    [ "$changed" = 0 ] || /etc/init.d/dnsmasq restart
+}
+cleanup() {
+    /usr/sbin/aw1000-ipv6-follow --restore || true
+    dns_cleanup
+    for f in front_end_ipv4_stop front_end_ipv6_stop; do
+        [ ! -f "$RUN/ecm-$f" ] || {
+            p=/sys/kernel/debug/ecm/$f
+            [ ! -f "$p" ] || cat "$RUN/ecm-$f" > "$p"
+            rm -f "$RUN/ecm-$f"
+        }
+    done
+    for key in flow_offloading flow_offloading_hw; do
+        old=$(get "aw1000.internet.saved_$key")
+        case "$old" in unset) uci -q delete "firewall.@defaults[0].$key" || true;; 0|1) uci set "firewall.@defaults[0].$key=$old";; esac
+    done
+    [ -z "$(uci -q changes firewall)" ] || uci commit firewall
+    rm -f "$RUN/flow-signature" "$RUN/mark" "$RUN/selected"
+}
+
+uptime_s() { cut -d. -f1 /proc/uptime; }
+bounded() { timeout "$@"; }
+dns_path() {
+    case "$1" in /tmp/dnsmasq*.d/aw1000-mwan.conf) :;; *) return 1;; esac
+    case "$1" in *'..'*|*'|'*) return 1;; esac
+}
+dns_update() {
+    local section dir owner server file changed=0 auto=0 custom=0 next_signature current retry previous_files
+    previous_files=$(cat "$RUN/dns-files" 2>/dev/null || true)
+    dns_phase=applied; dns_error=''
+    dns=''
+    if [ -n "$choice" ]; then
+        dns=$(printf '%s' "$info" | jq -r '.["dns-server"][]? | strings')
+        [ "$(get "network.$choice.peerdns")" != 0 ] || dns=$(get "network.$choice.dns")
+        dns="$dns 223.5.5.5 119.29.29.29"
+    fi
+    dns=$(printf '%s\n' $dns | awk -F. 'NF==4 {
+      ok=1; for(i=1;i<=4;i++) if($i!~/^[0-9]+$/||$i+0>255)ok=0
+      if(ok && $1+0>0 && $1+0<224 && $1+0!=127 && !seen[$0]++)print
+    }')
+    dns_config=$(echo no-resolv; for server in $dns; do printf 'server=%s\n' "$server"; done)
+    : > "$RUN/dns-map.tmp"
+    for section in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^=]*\)=dnsmasq$/\1/p'); do
+        [ "$(get "dhcp.$section.disabled")" != 1 ] || continue
+        dir=$(get "dhcp.$section.confdir"); dir=${dir:-/tmp/dnsmasq.d}
+        dns_path "$dir/aw1000-mwan.conf" || continue
+        owner=auto
+        if [ "$(get mosdns.config.enabled)" = 1 ] && [ "$(get mosdns.config.redirect)" = 1 ]; then owner=managed; fi
+        for server in $(get "dhcp.$section.server"); do
+            case "$server" in /*) :;; *) owner=managed;; esac
+        done
+        printf '%s|%s\n' "$dir/aw1000-mwan.conf" "$owner" >> "$RUN/dns-map.tmp"
+    done
+    # A managed instance owns a shared confdir. Do not inject into it.
+    awk -F'|' '{files[$1]=1;if($2=="managed")managed[$1]=1}
+      END{for(f in files)print f "|" (managed[f]?"managed":"auto")}' "$RUN/dns-map.tmp" |
+      sort > "$RUN/dns-map.next"
+    awk -F'|' '$2=="auto"{print $1}' "$RUN/dns-map.next" > "$RUN/dns-files.next"
+    auto=$(awk -F'|' '$2=="auto"{n++}END{print n+0}' "$RUN/dns-map.next")
+    custom=$(awk -F'|' '$2=="managed"{n++}END{print n+0}' "$RUN/dns-map.next")
+    dns_mode=auto
+    [ "$custom" = 0 ] || { dns_mode=managed; [ "$auto" = 0 ] || dns_mode=mixed; }
+    dns_servers=$(printf '%s' "$dns" | tr '\n' ' ')
+    [ "$dns_mode" != managed ] || dns_servers=''
+    next_signature="$choice|$dns_mode|$dns_servers"
+    [ "$dns_mode" != managed ] || next_signature="$choice|managed"
+    current=$(uptime_s)
+    retry=$(cat "$RUN/dns-retry-at" 2>/dev/null || echo 0)
+    case "$retry" in ''|*[!0-9]*) retry=0;; esac
+    if [ "$(cat "$RUN/dns-attempt" 2>/dev/null || true)" = "$next_signature" ] &&
+       cmp -s "$RUN/dns-map.next" "$RUN/dns-attempt-map" && [ "$current" -lt "$retry" ]; then
+        dns_phase=retry; dns_error='DNS reload retry is delayed'; return 1
+    fi
+    if [ -f "$RUN/dns-files" ]; then
+        while IFS= read -r file; do
+            dns_path "$file" || continue
+            grep -Fxq "$file" "$RUN/dns-files.next" && continue
+            [ ! -e "$file" ] || { rm -f "$file" || return 1; changed=1; }
+        done < "$RUN/dns-files"
+    fi
+    while IFS= read -r file; do
+        [ -n "$file" ] || continue
+        if [ "$(cat "$file" 2>/dev/null || true)" != "$dns_config" ]; then
+            mkdir -p "${file%/*}" || return 1
+            printf '%s\n' "$dns_config" > "$file.tmp.$$" || return 1
+            mv "$file.tmp.$$" "$file" || return 1
+            changed=1
+        fi
+    done < "$RUN/dns-files.next"
+    if [ "$auto" -gt 0 ] || [ -n "$previous_files" ]; then
+        if ! cmp -s "$RUN/dns-files.next" "$RUN/dns-files" ||
+           [ "$(cat "$RUN/dns-signature" 2>/dev/null || true)" != "$next_signature" ]; then changed=1; fi
+    fi
+    mv "$RUN/dns-files.next" "$RUN/dns-files"
+    mv "$RUN/dns-map.next" "$RUN/dns-map"
+    if [ "$changed" = 1 ]; then
+        rm -f "$RUN/dns-signature"
+        printf '%s\n' "$next_signature" > "$RUN/dns-attempt"
+        cp "$RUN/dns-map" "$RUN/dns-attempt-map"
+        if bounded 10 /etc/init.d/dnsmasq restart; then
+            rm -f "$RUN/dns-failures" "$RUN/dns-retry-at"
+        else
+            dns_phase=failed; dns_error='DNS configuration reload failed'
+            failures=$(cat "$RUN/dns-failures" 2>/dev/null || echo 0)
+            case "$failures" in ''|*[!0-9]*) failures=0;; esac
+            failures=$((failures+1)); delay=5
+            [ "$failures" -lt 2 ] || delay=15
+            [ "$failures" -lt 3 ] || delay=30
+            echo "$failures" > "$RUN/dns-failures"; echo "$((current+delay))" > "$RUN/dns-retry-at"
+            [ "$failures" -ne 1 ] || logger -t aw1000-mwan "$dns_error; retry with backoff"
+            return 1
+        fi
+    fi
+    printf '%s\n' "$next_signature" > "$RUN/dns-signature.tmp"
+    mv "$RUN/dns-signature.tmp" "$RUN/dns-signature"
+}
+
+ipv6_once() {
+    [ -r "$RUN/ipv6-request.json" ] || return 0
+    request=$(cat "$RUN/ipv6-request.json")
+    request_generation=$(printf '%s' "$request" | jq -r '.generation')
+    vchoice=$(printf '%s' "$request" | jq -r '.choice')
+    vrows=$(printf '%s' "$request" | jq -c '.rows')
+    vlog="$RUN/ipv6-last.log.tmp.$$"
+    timeout 12 /usr/sbin/aw1000-ipv6-follow "$vchoice" "$vrows" > "$vlog" 2>&1 & vpid=$!
+    trap 'kill -TERM "$vpid" 2>/dev/null || true; wait "$vpid" 2>/dev/null || true; rm -f "$vlog"; exit 143' TERM INT
+    if wait "$vpid"; then code=0; else code=$?; fi
+    trap - TERM INT
+    mv "$vlog" "$RUN/ipv6-last.log"
+    if [ "$code" != 0 ] && [ "$(cat "$RUN/ipv6-error" 2>/dev/null || true)" != "$code" ]; then
+        logger -t aw1000-mwan "IPv6 同步失败（状态 $code），IPv4 DNS 独立运行；详情见 $RUN/ipv6-last.log"
+    fi
+    if [ "$code" = 0 ]; then rm -f "$RUN/ipv6-error"; else echo "$code" > "$RUN/ipv6-error"; fi
+    printf '%s\n' "$code" > "$RUN/ipv6-status.tmp"
+    mv "$RUN/ipv6-status.tmp" "$RUN/ipv6-status"
+    jq -cn --arg generation "$request_generation" --arg choice "$vchoice" --argjson code "$code" --argjson uptime "$(uptime_s)" \
+        '{generation:$generation,choice:$choice,code:$code,uptime:$uptime}' > "$RUN/ipv6-result.json.tmp.$$"
+    mv "$RUN/ipv6-result.json.tmp.$$" "$RUN/ipv6-result.json"
+    return "$code"
+}
+ipv6_worker() {
+    exec 6>"$RUN/ipv6-worker.lock"; flock -n 6 || exit 0
+    failures=0; previous=''
+    trap '[ -z "${job:-}" ] || { kill -TERM "$job" 2>/dev/null; wait "$job" 2>/dev/null; }; exit 0' TERM INT
+    while [ ! -f /var/run/aw1000-internet/stopping ]; do
+        generation=$(jq -r '.generation' "$RUN/ipv6-request.json" 2>/dev/null || true)
+        if [ -z "$generation" ]; then sleep 1; continue; fi
+        [ "$generation" = "$previous" ] || failures=0
+        previous=$generation
+        "$0" --ipv6-once & job=$!
+        cancelled=0
+        while kill -0 "$job" 2>/dev/null; do
+            latest=$(jq -r '.generation' "$RUN/ipv6-request.json" 2>/dev/null || true)
+            if [ "$latest" != "$generation" ] || [ -f /var/run/aw1000-internet/stopping ]; then
+                kill -TERM "$job" 2>/dev/null || true
+                cancelled=1
+                break
+            fi
+            sleep 1
+        done
+        if wait "$job"; then failures=0; else failures=$((failures+1)); fi
+        job=''
+        [ "$cancelled" = 0 ] || continue
+        delay=5
+        [ "$failures" -lt 2 ] || delay=15
+        [ "$failures" -lt 3 ] || delay=30
+        while [ "$delay" -gt 0 ] && [ ! -f /var/run/aw1000-internet/stopping ]; do
+            [ "$(jq -r '.generation' "$RUN/ipv6-request.json" 2>/dev/null || true)" = "$generation" ] || break
+            sleep 1; delay=$((delay-1))
+        done
+    done
+}
+snapshot() {
+    vresult=$(cat "$RUN/ipv6-result.json" 2>/dev/null || echo '{}')
+    vstatus=$(cat /var/run/aw1000-ipv6-follow/status.json 2>/dev/null || echo '{}')
+    jq -cn --arg generation "$epoch" --arg choice "$choice" --argjson uptime "$(uptime_s)" \
+       --arg phase "${dns_phase:-failed}" --arg error "${dns_error:-}" --arg mode "${dns_mode:-auto}" \
+       --arg servers "${dns_servers:-}" --argjson result "$vresult" --argjson ipv6 "$vstatus" \
+       '{generation:$generation,selected:$choice,uptime:$uptime,
+         dns:{choice:$choice,phase:$phase,error:$error,mode:$mode,servers:$servers,generation:$generation},
+         ipv6:{phase:(if $result.generation!=$generation then "pending" elif $result.code==0 then "applied" else "retry" end),result:$result,status:$ipv6}}' \
+       > "$RUN/state.json.tmp"
+    mv "$RUN/state.json.tmp" "$RUN/state.json"
+}
+case "${1:-}" in
+    --ipv6-worker) ipv6_worker; exit 0;;
+    --ipv6-once) ipv6_once; exit $?;;
+esac
+exec 9>"$RUN/lock"
+flock -n 9 || exit 0
+if [ "${1:-}" = --restore ]; then
+    exec 6>"$RUN/ipv6-worker.lock"; timeout 20 flock -x 6 || exit 1
+    cleanup; exit 0
+fi
+[ "${1:-}" = --once ] || exit 2
+[ "$(get mwan3.globals.aw1000_enabled)" = 1 ] || { cleanup; exit 0; }
+mkdir -p /var/run/aw1000-internet
+exec 8>/var/run/aw1000-internet/apply.lock
+flock -s -n 8 || exit 0
+case "$(get mwan3.globals.mmx_mask)" in 0x00ff0000|0xff0000) :;; *) exit 1;; esac
+ecm_guard
+choice=''; mark=''
+policy=$(iptables -t mangle -w 2 -S mwan3_policy_aw_failover 2>/dev/null) || policy=''
+token=$(printf '%s\n' "$policy" | sed -n 's/.*--set-xmark \(0x[0-9a-fA-F]*\)\/.*/\1/p' | head -n1)
+case "$token" in ''|*[!0-9a-fA-Fx]*) id=0;; *) id=$((token >> 16));; esac
+index=0
+for iface in $(uci -q show mwan3 | sed -n 's/^mwan3\.\([A-Za-z0-9_]*\)=interface$/\1/p'); do
+    index=$((index+1))
+    if [ "$index" = "$id" ]; then choice=$iface; mark=$token; fi
+done
+cell=$(get mwan3.globals.aw1000_cellular)
+if [ "$choice" != wan ] && [ "$choice" != "$cell" ]; then choice=''; mark=''; fi
+rows='[{"enabled":true,"target":"wan"}]'
+if valid "$cell"; then rows=$(printf '%s' "$rows" | jq -c --arg cell "$cell" '.+[{enabled:true,target:$cell}]'); fi
+info='{}'
+if valid "$choice"; then info=$(ubus -t 3 call "network.interface.$choice" status 2>/dev/null) || info='{}'; fi
+flow_signature="$choice|$(printf '%s' "$info" | jq -cS '{dev:.l3_device,addr:([.["ipv4-address"][]?|{address,mask}]),route:([.route[]?|{target,mask,nexthop,metric}])}')"
+epoch=$(cat "$RUN/epoch" 2>/dev/null || echo 0)
+case "$epoch" in ''|*[!0-9]*) epoch=0;; esac
+old=$(cat "$RUN/selected" 2>/dev/null || echo startup)
+if [ "$(cat "$RUN/flow-signature" 2>/dev/null || true)" != "$flow_signature" ]; then
+    epoch=$((epoch+1)); echo "$epoch" > "$RUN/epoch"
+    oldmark=$(cat "$RUN/mark" 2>/dev/null || true)
+    if [ -n "$oldmark" ]; then
+        /usr/sbin/aw1000-flow-flush "$oldmark" || exit 1
+    fi
+    reason='线路健康或地址变化'
+    [ ! -d /etc/aw1000-internet-pending ] || reason='上网设置变更'
+    [ -n "$choice" ] || reason='所选模式下没有可用线路'
+    jq -cn --arg time "$(date '+%Y-%m-%d %H:%M:%S %z')" --arg reason "$reason" --arg from "$old" --arg to "$choice" \
+        '{time:$time,reason:$reason,from:$from,to:$to}' > "$RUN/event.json.tmp"
+    mv "$RUN/event.json.tmp" "$RUN/event.json"
+    printf '%s\n' "$flow_signature" > "$RUN/flow-signature"
+    printf '%s\n' "$mark" > "$RUN/mark"
+    logger -t aw1000-mwan "出口变化 $old -> $choice ($reason)"
+fi
+printf '%s\n' "$choice" > "$RUN/selected.tmp"
+mv "$RUN/selected.tmp" "$RUN/selected"
+
+# DNS is reconciled before dispatching the independent IPv6 worker.
+dns_rc=0
+dns_update || dns_rc=$?
+if [ "$dns_rc" != 0 ] && [ "$dns_phase" = applied ]; then dns_phase=failed; dns_error='DNS file update failed'; fi
+jq -cn --arg generation "$epoch" --arg choice "$choice" --argjson rows "$rows" \
+    '{generation:$generation,choice:$choice,rows:$rows}' > "$RUN/ipv6-request.json.tmp"
+mv "$RUN/ipv6-request.json.tmp" "$RUN/ipv6-request.json"
+# Explicit inline mode is for bounded diagnostics and isolated regression tests.
+if [ "${AW1000_IPV6_INLINE:-0}" = 1 ]; then ipv6_once || true; fi
+snapshot
+exit "$dns_rc"

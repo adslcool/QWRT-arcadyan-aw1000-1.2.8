@@ -1,0 +1,12 @@
+#!/bin/sh
+# Serialize phone queries through the same daemon used by QModem.
+set -eu
+[ "$#" = 2 ] || exit 2
+port=$1
+[ "$port" != auto ] || port=$(/usr/sbin/aw1000-phone-port)
+suffix=${port#/dev/ttyUSB}
+[ "$suffix" != "$port" ] || exit 2
+case "$suffix" in ''|*[!0-9]*) exit 2;; esac
+payload=$(jq -cn --arg p "$port" --arg c "$2" '{at_port:$p,at_cmd:$c,timeout:3}')
+reply=$(ubus -t 5 call at-daemon sendat "$payload")
+printf '%s\n' "$reply" | jq -er 'select(.status == "success") | .response'

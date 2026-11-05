@@ -1,0 +1,15 @@
+#!/bin/sh
+count=0
+while [ "$count" -lt 30 ]; do
+    if /usr/sbin/aw1000-provision; then
+        /etc/init.d/network reload
+        /etc/init.d/dnsmasq restart
+        /etc/init.d/firewall reload
+        /etc/init.d/qmodem_init restart
+        exit 0
+    fi
+    count=$((count+1))
+    sleep 5
+done
+logger -t aw1000-mod '初始化未完成；请查看 /etc/aw1000-mod 和 logread，配置文件保留供重试'
+exit 1

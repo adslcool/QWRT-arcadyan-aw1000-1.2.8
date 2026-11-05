@@ -1,0 +1,6 @@
+#!/bin/sh
+[ "$(uci -q get mwan3.globals.aw1000_enabled)" = 1 ] || exit 0
+# A firewall reload flushes the mwan chains. Queue reconstruction in the
+# manager; never enter mwan3 init here while its caller is still reloading.
+mkdir -p /var/run/aw1000-internet
+touch /var/run/aw1000-internet/mwan-reload-needed /var/run/aw1000-internet/dirty

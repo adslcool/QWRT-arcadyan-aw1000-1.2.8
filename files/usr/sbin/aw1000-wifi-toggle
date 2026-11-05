@@ -1,0 +1,191 @@
+#!/bin/sh
+set -u
+umask 077
+
+# QWRT/QSDK applies both enabled and disabled radio settings through wifi up.
+# Decide the next state from the running ath* AP interfaces, not stale UCI flags.
+RUN=${AW1000_BUTTON_RUN:-/var/run}
+LOCK=${AW1000_BUTTON_LOCK:-/var/lock}
+CONFIG=${AW1000_CONFIG_ROOT:-/etc/config}
+SYS=${AW1000_WIFI_SYS:-/sys/class/net}
+WIFI_CMD=${AW1000_WIFI_CMD:-/sbin/wifi}
+
+
+WIFI_RUN=$RUN/aw1000-wifi
+wifi_clock() {
+    n=$(cut -d. -f1 "${AW1000_BUTTON_UPTIME:-/proc/uptime}" 2>/dev/null) || n=0
+    case "$n" in ''|*[!0-9]*) n=0;; esac
+    printf '%s\n' "$n"
+}
+vap_down() {
+    [ -r "$WIFI_RUN/events/$1" ] || return 1
+    index=$(cat "$SYS/$1/ifindex" 2>/dev/null) || return 1
+    [ -n "$index" ] && [ "$(sed -n 's/^ifindex=//p' "$WIFI_RUN/events/$1")" = "$index" ] &&
+        grep -q '^state=down$' "$WIFI_RUN/events/$1"
+}
+wifi_events() {
+    mkdir -p "$WIFI_RUN/events"
+    while IFS= read -r line; do
+        case "$line" in *'mlme_ext_vap_up: VAP ('*|*'mlme_ext_vap_down: VAP ('*) :;; *) continue;; esac
+        event=$(printf '%s\n' "$line" | awk '
+          /mlme_ext_vap_(up|down): VAP \(ath[0-9]+\).* is (up|down)$/ {
+            match($0,/VAP \(ath[0-9]+\)/);name=substr($0,RSTART+5,RLENGTH-6)
+            t=0;if(match($0,/\[[ \t]*[0-9]+[.][0-9]+\]/)){s=substr($0,RSTART,RLENGTH);gsub(/[\[\] \t]/,"",s);t=int(s)}
+            print name,$NF,t
+          }')
+        [ -n "$event" ] || continue
+        set -- $event
+        name=$1; state=$2; event_time=$3
+        index=$(cat "$SYS/$name/ifindex" 2>/dev/null) || continue
+        case "$index" in ''|*[!0-9]*) continue;; esac
+        printf 'state=%s\nifindex=%s\ntime=%s\n' "$state" "$index" "$event_time" > "$WIFI_RUN/events/$name.tmp.$$"
+        mv "$WIFI_RUN/events/$name.tmp.$$" "$WIFI_RUN/events/$name"
+    done
+}
+wifi_scan() {
+    radio=${1:-}
+    case "$radio" in wifi0|wifi1) :;; *) echo '{"error":"无线设备无效"}'; return 0;; esac
+    mkdir -p "$LOCK" "$WIFI_RUN"
+    exec 8>"$LOCK/aw1000-wifi.lock"
+    if ! flock -n 8; then echo '{"mode":"cache","stdout":"","busy":true,"note":"无线正在重建，请稍后手动重试"}'; return 0; fi
+    exec 7>"$WIFI_RUN/scan.lock"
+    if ! flock -n 7; then echo '{"mode":"cache","stdout":"","busy":true,"note":"已有扫描请求正在执行"}'; return 0; fi
+    ap=ath${radio#wifi}
+    index=$(cat "$SYS/$ap/ifindex" 2>/dev/null || true)
+    now=$(wifi_clock)
+    token="$index|$(sha256sum "$CONFIG/wireless" 2>/dev/null || true)"
+    stamp=$(cat "$WIFI_RUN/$radio.time" 2>/dev/null || echo 0)
+    case "$stamp" in ''|*[!0-9]*) stamp=0;; esac
+    if [ -s "$WIFI_RUN/$radio.json" ] && [ "$(cat "$WIFI_RUN/$radio.token" 2>/dev/null || true)" = "$token" ] &&
+       [ "$now" -ge "$stamp" ] && [ "$((now-stamp))" -lt 10 ]; then
+        cat "$WIFI_RUN/$radio.json"; return 0
+    fi
+    raw="$WIFI_RUN/$radio.raw.tmp.$$"; : > "$raw"
+    flags=$(cat "$SYS/$ap/flags" 2>/dev/null || echo 0)
+    case "$flags" in 0x*|0X*) :;; *[!0-9]*) flags=0;; esac
+    before_up=0
+    if [ -n "$index" ] && [ $((flags & 1)) -ne 0 ] && ! vap_down "$ap"; then before_up=1; fi
+    note='QCA 当前仅显示已有扫描缓存，不执行可能中断 AP 的主动扫描；缓存可能为空或过期。'
+    code=0; recovered=false; attempted=false
+    if [ -n "$index" ] && command -v timeout >/dev/null 2>&1; then
+        if timeout 4 "${AW1000_WIFI_IW:-/usr/sbin/iw}" dev "$ap" scan dump > "$raw" 2>/dev/null; then :; else code=$?; fi
+    else code=127; fi
+    # Only a new driver-confirmed failure during this request may trigger one
+    # scoped recovery. A user's disabled/configuration state is never undone.
+    if [ "$before_up" = 1 ] && vap_down "$ap" &&
+       [ "$token" = "$index|$(sha256sum "$CONFIG/wireless" 2>/dev/null || true)" ] &&
+       [ "$(uci -q get "wireless.$radio.disabled")" != 1 ]; then
+        event_time=$(sed -n 's/^time=//p' "$WIFI_RUN/events/$ap")
+        last=$(cat "$WIFI_RUN/$radio.recover-time" 2>/dev/null || echo 0)
+        case "$event_time:$last" in *[!0-9:]*) event_time=0;last=0;; esac
+        if [ "$event_time" -ge "$now" ] && [ "$((now-last))" -ge 60 ]; then
+            attempted=true
+            echo "$now" > "$WIFI_RUN/$radio.recover-time"
+            if timeout 15 "$WIFI_CMD" up "$radio" > "$WIFI_RUN/$radio.recover-log" 2>&1; then recovered=true; fi
+        fi
+    fi
+    head -c 262144 "$raw" | jq -Rs --arg device "$radio" --arg ifname "$ap" --arg note "$note" \
+       --argjson read_uptime "$now" --argjson code "$code" --argjson recovered "$recovered" --argjson attempted "$attempted" \
+       '{device:$device,ifname:$ifname,mode:"cache",active_scan_supported:false,stdout:.,note:$note,
+         cache_read_uptime:$read_uptime,code:$code,recovery_attempted:$attempted,recovered:$recovered}' > "$WIFI_RUN/$radio.json.tmp"
+    rm -f "$raw"
+    mv "$WIFI_RUN/$radio.json.tmp" "$WIFI_RUN/$radio.json"
+    printf '%s\n' "$token" > "$WIFI_RUN/$radio.token"; echo "$now" > "$WIFI_RUN/$radio.time"
+    cat "$WIFI_RUN/$radio.json"
+}
+case "${1:-}" in
+    --watch) logread -f | "$0" --events; exit $?;;
+    --events) wifi_events; exit 0;;
+    --scan) wifi_scan "${2:-}"; exit $?;;
+esac
+
+mkdir -p "$LOCK" "$RUN" || exit 1
+exec 9>"$LOCK/aw1000-wifi.lock"
+flock -n 9 || exit 0
+
+now=$(cut -d. -f1 "${AW1000_BUTTON_UPTIME:-/proc/uptime}" 2>/dev/null) || now=0
+case "$now" in ''|*[!0-9]*) now=0;; esac
+last=$(cat "$RUN/aw1000-wifi.last" 2>/dev/null) || last=0
+case "$last" in ''|*[!0-9]*) last=0;; esac
+[ "$now" -eq 0 ] || [ "$last" -eq 0 ] || [ $((now-last)) -ge 2 ] || exit 0
+
+runtime_aps() {
+    for path in "$SYS"/ath*; do
+        [ -r "$path/flags" ] || continue
+        flags=$(cat "$path/flags" 2>/dev/null) || flags=0
+        case "$flags" in 0x*|0X*) ;; *[!0-9]*) flags=0;; esac
+        [ $((flags & 1)) -ne 0 ] || continue
+        ! vap_down "${path##*/}" || continue
+        printf '%s ' "${path##*/}"
+    done
+}
+
+[ -z "$(uci -q changes wireless)" ] || {
+    logger -t aw1000-buttons 'Wi-Fi: uncommitted edits; deferred'
+    exit 1
+}
+radios=$(uci -q show wireless | sed -n 's/^wireless\.\([A-Za-z0-9_]*\)=wifi-device$/\1/p')
+[ -n "$radios" ] || {
+    logger -t aw1000-buttons 'Wi-Fi: no radios found'
+    exit 1
+}
+
+before_aps=$(runtime_aps)
+if [ -n "$before_aps" ]; then
+    requested=1
+    action=disable
+else
+    requested=0
+    action=enable
+fi
+
+stage=$(mktemp -d "$RUN/aw1000-wifi.XXXXXX") || exit 1
+trap 'rm -rf "$stage"' EXIT
+cp -p "$CONFIG/wireless" "$stage/wireless" || exit 1
+printf '%s\n' "$now" > "$RUN/aw1000-wifi.last"
+
+failed=0
+for radio in $radios; do
+    uci set "wireless.$radio.disabled=$requested" || failed=1
+done
+if [ "$failed" -ne 0 ] || ! uci commit wireless; then
+    uci -q revert wireless || true
+    cp -p "$stage/wireless" "$CONFIG/wireless"
+    logger -t aw1000-buttons 'Wi-Fi: UCI update failed; configuration restored without radio reload'
+    exit 1
+fi
+
+reload_log=$RUN/aw1000-wifi.reload-log
+"$WIFI_CMD" up >"$reload_log" 2>&1
+reload_rc=$?
+
+after_aps=$(runtime_aps)
+if [ -n "$after_aps" ]; then
+    runtime_up=1
+    rm -f "$RUN/aw1000-wifi-off"
+else
+    runtime_up=0
+    touch "$RUN/aw1000-wifi-off"
+fi
+
+if { [ "$requested" -eq 1 ] && [ "$runtime_up" -eq 0 ]; } || \
+   { [ "$requested" -eq 0 ] && [ "$runtime_up" -eq 1 ]; }; then
+    result=matched
+else
+    result=pending
+fi
+
+{
+    printf 'requested_disabled=%s\n' "$requested"
+    printf 'action=%s\n' "$action"
+    printf 'before_aps=%s\n' "$before_aps"
+    printf 'after_aps=%s\n' "$after_aps"
+    printf 'runtime_up=%s\n' "$runtime_up"
+    printf 'reload_rc=%s\n' "$reload_rc"
+    printf 'result=%s\n' "$result"
+    printf 'time=%s\n' "$now"
+} > "$RUN/aw1000-wifi.button-state"
+
+logger -t aw1000-buttons "Wi-Fi: action=$action requested_disabled=$requested runtime_up=$runtime_up reload_rc=$reload_rc result=$result"
+# A non-zero QSDK return can be benign; never perform a second inverse reload.
+exit 0

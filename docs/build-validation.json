@@ -1,0 +1,1013 @@
+{
+  "version": "1.2.8",
+  "release": {
+    "firmware_display": "QWRT R26.11.5_V1.2.8",
+    "firmware_revision": "R26.11.5_V1.2.8",
+    "build_date": "2026-11-05",
+    "build_timezone": "Asia/Shanghai",
+    "base_release": "25.12.2",
+    "base_revision": "r47986-d312c785fd"
+  },
+  "source_sha256": "36c5983d215c6a04bd2283757f5ff45df58cb472aa4984b27f2707705c3f4ecf",
+  "factory": "QWRT-arcadyan-aw1000-1.2.8-factory.ubi",
+  "factory_sha256": "7e2b2ed6f7b4f7a25d12b3252aab55cd1bd924de4ec20d2e0e6dd66ecf3ec853",
+  "password_hash_format": "md5-crypt",
+  "original_password_runtime_verified": true,
+  "sysupgrade": "QWRT-arcadyan-aw1000-1.2.8-sysupgrade.bin",
+  "sysupgrade_sha256": "1496b17d06832c668420c4c7e5135a3a8d3763c6175095499dcbde59564933ba",
+  "checksums": "QWRT-arcadyan-aw1000-1.2.8.sha256",
+  "sysupgrade_format": "NAND TAR + fwtool metadata",
+  "sysupgrade_original_fwtool_and_tar_verified": true,
+  "sysupgrade_payload_hardware_verified": false,
+  "sysupgrade_manual_power_cycle_boot_verified": false,
+  "historical_sysupgrade_validation": {
+    "version": "1.0.17",
+    "payload_boot_after_manual_power_cycle": true
+  },
+  "sysupgrade_auto_reset_fix_hardware_verified": false,
+  "removed_packages": [
+    "3proxy",
+    "coremark",
+    "ddns-scripts",
+    "ddns-scripts-services",
+    "dns2socks",
+    "dns2tcp",
+    "hysteria",
+    "ipt2socks",
+    "libatomic1",
+    "libev",
+    "libminiupnpc",
+    "libnatpmp",
+    "libpcre2",
+    "libruby3.3",
+    "libsodium",
+    "libudns",
+    "libyaml",
+    "lua-neturl",
+    "luci-app-ddns",
+    "luci-app-modem-data",
+    "luci-app-msd_lite",
+    "luci-app-openclash",
+    "luci-app-ssr-plus",
+    "luci-app-vsftpd",
+    "luci-app-xupnpd",
+    "luci-app-zerotier",
+    "luci-i18n-ddns-zh-cn",
+    "luci-i18n-modem-data-zh-cn",
+    "luci-i18n-msd_lite-zh-cn",
+    "luci-i18n-ssr-plus-zh-cn",
+    "luci-i18n-vsftpd-zh-cn",
+    "luci-i18n-xupnpd-zh-cn",
+    "luci-i18n-zerotier-zh-cn",
+    "luci-theme-design",
+    "lyaml",
+    "mcproxy",
+    "microsocks",
+    "mihomo",
+    "msd_lite",
+    "nping",
+    "rtp2httpd",
+    "ruby",
+    "ruby-bigdecimal",
+    "ruby-date",
+    "ruby-digest",
+    "ruby-enc",
+    "ruby-pstore",
+    "ruby-psych",
+    "ruby-stringio",
+    "ruby-yaml",
+    "shadowsocksr-libev-ssr-check",
+    "shadowsocksr-libev-ssr-local",
+    "shadowsocksr-libev-ssr-redir",
+    "tcping",
+    "vsftpd-alt",
+    "xray-core",
+    "xupnpd",
+    "zerotier"
+  ],
+  "sysupgrade_status": "current-payload-and-auto-reset-awaiting-hardware-validation",
+  "led_hardware": {
+    "profile": "qwrt-5.4.213-led-helper-ret",
+    "module": "lib/modules/5.4.213/qca_ol.ko",
+    "input_sha256": "e09f70633bc21f932078484e6e6457800e7b7e901b2fab5835e73ad5a864bbd9",
+    "baseline_sha256": "e09f70633bc21f932078484e6e6457800e7b7e901b2fab5835e73ad5a864bbd9",
+    "sha256": "9b5bb825cf1c520dc5b7393fd0134f06bcdda7fc3feead52dfe82d6dfd7b3de4",
+    "patch_file_offset": 627176,
+    "changed_bytes": 4,
+    "led_gpio_enable_8074": 0,
+    "startup_scripts": [
+      "lib/wifi/qcawifi.sh",
+      "lib/wifi/qcawificfg80211.sh"
+    ],
+    "ap_statistics": "unchanged",
+    "dt_mapping": "unchanged"
+  },
+  "wifi_scan": {
+    "mode": "cache-only",
+    "temporary_sta": false,
+    "ap_force": false,
+    "active_scan_hardware_verified": false
+  },
+  "internet": {
+    "backend": "mwan3-fw3",
+    "version": "2.11.7-2",
+    "archive_sha256": "7fcf90e8b0265a6d1d1bde3c47794685bba4c0a7e70c69531c65e9f8caf2e047",
+    "wrapper_original_musl_load_verified": true,
+    "hardware_verified": false
+  },
+  "arpbind": {
+    "package": "luci-app-arpbind",
+    "commit": "d72e293e6fd698af75510b9018fb7e154ae219cc",
+    "archive_sha256": "d85e6dd06f60c5bf1b68a874eb589ef3bcc2be185b34efef30c1985a05509507",
+    "chinese": true,
+    "default_device": "br-lan",
+    "cleanup": "owned-permanent-neighbors-only",
+    "hardware_verified": false
+  },
+  "modemdata": {
+    "ui_version": "1.0.32-20260709",
+    "backend_version": "20261017-1",
+    "ui_commit": "862d7385346813bb0a862611f3ebd26659b09dfd",
+    "backend_commit": "fbdc0b6a720647642e99c6fc8db933a767c9ead0",
+    "views": 5,
+    "transport": "at-daemon",
+    "refresh_seconds": 10,
+    "product_cache_seconds": 300,
+    "hardware_verified": false,
+    "additional_serial_daemon": false
+  },
+  "librespeed": {
+    "version": "1.1.5-r5",
+    "ipk_sha256": "f907ba56b3e4593354c368a37eecf6c7283b7a8bc25cbc67117871809ca83e5f",
+    "enabled": true,
+    "listen_port": 8989,
+    "database_type": "none",
+    "user": "librespeed",
+    "hardware_verified": false,
+    "original_qwrt_runtime_load_verified": true
+  },
+  "original_kernel_sha256": "a5527f6545ab2f43e8bab1bd86b65bff3f820ec19a36c4bc7c27f75386dd3caf",
+  "output_kernel_sha256": "86e0035526c15b8db468373f26a9a715a1c6cbb8c3ff919e0dd31c8b22f87c37",
+  "phone": {
+    "version": "1.2.8",
+    "phone_driver_integrated": true,
+    "phone_runtime_verified": false,
+    "phone_mode": "bundled",
+    "phone_driver_experimental": true,
+    "phone_abi_verified": false,
+    "phone_driver_build_version": "1.2.5",
+    "phone_config_difference_count": 51,
+    "phone_commit": "f26f9f5a4bfbee391a3a15c9dab886c96d7ca539",
+    "kernel_package": "5.4.213-1-606f983e9fed006b50a91d394d80f588",
+    "phone_message": "已集成内置实验驱动并启用电话；ABI、加载及通话待实机验证",
+    "led_hardware": {
+      "profile": "qwrt-5.4.213-led-helper-ret",
+      "module": "lib/modules/5.4.213/qca_ol.ko",
+      "input_sha256": "e09f70633bc21f932078484e6e6457800e7b7e901b2fab5835e73ad5a864bbd9",
+      "baseline_sha256": "e09f70633bc21f932078484e6e6457800e7b7e901b2fab5835e73ad5a864bbd9",
+      "sha256": "9b5bb825cf1c520dc5b7393fd0134f06bcdda7fc3feead52dfe82d6dfd7b3de4",
+      "patch_file_offset": 627176,
+      "changed_bytes": 4,
+      "led_gpio_enable_8074": 0,
+      "startup_scripts": [
+        "lib/wifi/qcawifi.sh",
+        "lib/wifi/qcawificfg80211.sh"
+      ],
+      "ap_statistics": "unchanged",
+      "dt_mapping": "unchanged"
+    }
+  },
+  "phone_driver_metadata": {
+    "schema": 2,
+    "version": "1.2.5",
+    "profile": "public-qsdk-experimental",
+    "compatibility_verified": false,
+    "hardware_verified": false,
+    "kernel_package": "5.4.213-1-606f983e9fed006b50a91d394d80f588",
+    "phone_commit": "5a5c87471d090f015a0ecaf1f407a8b0082d8e5c",
+    "sha256": "a14ab2317723f32ac1055f7cd15fb1924f769c34a76fb10916b7ff4f25fc09e8",
+    "vermagic": "5.4.213 SMP preempt mod_unload aarch64",
+    "qsdk_repository": "https://github.com/everything411/qsdk.git",
+    "qsdk_commit": "12fde49c2e2f5ed85e27be973a8c2ee9130a586a",
+    "compiler": "aarch64-linux-gnu-gcc (Linaro GCC 7.5-2019.12) 7.5.0",
+    "kernel_config_sha256": "9fcf30f7c36ef6366f47c45d99f8b84d2033c62e1e3494b76168d98c6ab20067",
+    "original_kernel_config_sha256": "6f3db954984db931afa3b1fe2716fe902414d3799758697a3e322b6971bc79dc",
+    "reference_original_image_sha256": "2cf34abbdeff69411f4fa70ed000de28ea83165586441f8315eb75ea25344d9c",
+    "config_changes": {
+      "CONFIG_CFG80211_REQUIRE_SIGNED_REGDB": {
+        "original": null,
+        "public": "y"
+      },
+      "CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS": {
+        "original": null,
+        "public": "y"
+      },
+      "CONFIG_CMDLINE_OVERRIDE": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_ARCH_HAVE_LIB_CHACHA": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_ARCH_HAVE_LIB_POLY1305": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_BLAKE2S": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_CHACHA20": {
+        "original": "n",
+        "public": "y"
+      },
+      "CONFIG_CRYPTO_CURVE25519": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_KPP": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_BLAKE2S": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_CHACHA": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_CHACHA20POLY1305": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_CHACHA_GENERIC": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_CURVE25519": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_CURVE25519_GENERIC": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_POLY1305": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_POLY1305_GENERIC": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_LIB_POLY1305_RSIZE": {
+        "original": "9",
+        "public": null
+      },
+      "CONFIG_CRYPTO_POLY1305": {
+        "original": "n",
+        "public": "y"
+      },
+      "CONFIG_CRYPTO_POLY1305_NEON": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_CRYPTO_RSA": {
+        "original": "n",
+        "public": "y"
+      },
+      "CONFIG_DM_INLINE_CRYPT": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_GCC_PLUGINS": {
+        "original": "n",
+        "public": null
+      },
+      "CONFIG_LEDS_LP5569": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_LRU_GEN": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_LRU_GEN_ENABLED": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_LRU_GEN_STATS": {
+        "original": "n",
+        "public": null
+      },
+      "CONFIG_MMC_SDHCI_MSM_ICE_PER_PART_DUN": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_MTD_QCOM_SMEM_PARTS": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_NR_LRU_GENS": {
+        "original": "7",
+        "public": null
+      },
+      "CONFIG_NTFS3_64BIT_CLUSTER": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_NTFS3_FS": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_NTFS3_FS_POSIX_ACL": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_NTFS3_LZX_XPRESS": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_PGB_QUICK_PATH": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_PKCS7_MESSAGE_PARSER": {
+        "original": "n",
+        "public": "y"
+      },
+      "CONFIG_PKCS7_TEST_KEY": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_PLUGIN_HOSTCC": {
+        "original": "\"g++\"",
+        "public": "\"\""
+      },
+      "CONFIG_QCOM_SOC_NETSTANDBY": {
+        "original": "n",
+        "public": null
+      },
+      "CONFIG_QTI_HW_KEY": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_SECONDARY_TRUSTED_KEYRING": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_SENDFILE_PATCH": {
+        "original": "y",
+        "public": null
+      },
+      "CONFIG_SIGNED_PE_FILE_VERIFICATION": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_SYSTEM_DATA_VERIFICATION": {
+        "original": null,
+        "public": "y"
+      },
+      "CONFIG_SYSTEM_EXTRA_CERTIFICATE": {
+        "original": null,
+        "public": "n"
+      },
+      "CONFIG_SYSTEM_TRUSTED_KEYRING": {
+        "original": "n",
+        "public": "y"
+      },
+      "CONFIG_SYSTEM_TRUSTED_KEYS": {
+        "original": null,
+        "public": "\"\""
+      },
+      "CONFIG_TIERS_PER_GEN": {
+        "original": "4",
+        "public": null
+      },
+      "CONFIG_WIREGUARD": {
+        "original": "m",
+        "public": null
+      },
+      "CONFIG_WIREGUARD_DEBUG": {
+        "original": "n",
+        "public": null
+      }
+    },
+    "struct_module_size": 768,
+    "original_struct_module_size": 768,
+    "kallsyms_address_checks": [
+      "__arch_copy_from_user",
+      "__arch_copy_to_user",
+      "__check_object_size",
+      "__const_udelay",
+      "__init_waitqueue_head",
+      "__ioremap",
+      "__msecs_to_jiffies",
+      "__mutex_init",
+      "__wake_up",
+      "_raw_spin_lock",
+      "_raw_spin_unlock",
+      "del_timer",
+      "del_timer_sync",
+      "disable_irq_nosync",
+      "enable_irq",
+      "finish_wait",
+      "free_irq",
+      "gpiod_add_lookup_table",
+      "gpiod_direction_input",
+      "gpiod_get",
+      "gpiod_get_raw_value",
+      "gpiod_put",
+      "gpiod_remove_lookup_table",
+      "gpiod_set_raw_value",
+      "gpiod_to_irq",
+      "init_timer_key",
+      "init_wait_entry",
+      "iounmap",
+      "kfree",
+      "kmalloc_order",
+      "kmem_cache_alloc",
+      "kthread_create_on_node",
+      "kthread_should_stop",
+      "kthread_stop",
+      "memset",
+      "misc_deregister",
+      "misc_register",
+      "mod_timer",
+      "msleep",
+      "mutex_lock",
+      "mutex_unlock",
+      "noop_llseek",
+      "of_machine_is_compatible",
+      "platform_device_register_full",
+      "platform_device_unregister",
+      "prepare_to_wait_event",
+      "printk",
+      "request_threaded_irq",
+      "sched_setscheduler",
+      "schedule",
+      "usleep_range",
+      "wake_up_process"
+    ],
+    "export_index": {
+      "source": "Original QWRT Image PREL32 export records; reconstructed GPL-only modpost index",
+      "count": 8879,
+      "modversions": false,
+      "original_Module_symvers_available": false
+    },
+    "import_checks": [
+      {
+        "name": "__arch_copy_from_user",
+        "namespace": "",
+        "entry_offset": 11027552,
+        "value_offset": 8539904,
+        "name_offset": 11308568
+      },
+      {
+        "name": "__arch_copy_to_user",
+        "namespace": "",
+        "entry_offset": 11027576,
+        "value_offset": 8540864,
+        "name_offset": 11308620
+      },
+      {
+        "name": "__check_object_size",
+        "namespace": "",
+        "entry_offset": 11028104,
+        "value_offset": 1715384,
+        "name_offset": 11159953
+      },
+      {
+        "name": "__const_udelay",
+        "namespace": "",
+        "entry_offset": 11028260,
+        "value_offset": 8541592,
+        "name_offset": 11305792
+      },
+      {
+        "name": "__init_waitqueue_head",
+        "namespace": "",
+        "entry_offset": 11029160,
+        "value_offset": 540808,
+        "name_offset": 11140901
+      },
+      {
+        "name": "__ioremap",
+        "namespace": "",
+        "entry_offset": 11029220,
+        "value_offset": 140960,
+        "name_offset": 11134610
+      },
+      {
+        "name": "__msecs_to_jiffies",
+        "namespace": "",
+        "entry_offset": 11029916,
+        "value_offset": 709112,
+        "name_offset": 11148070
+      },
+      {
+        "name": "__mutex_init",
+        "namespace": "",
+        "entry_offset": 11029928,
+        "value_offset": 566440,
+        "name_offset": 11142049
+      },
+      {
+        "name": "__wake_up",
+        "namespace": "",
+        "entry_offset": 11031680,
+        "value_offset": 541592,
+        "name_offset": 11140923
+      },
+      {
+        "name": "_raw_spin_lock",
+        "namespace": "",
+        "entry_offset": 11032256,
+        "value_offset": 8680520,
+        "name_offset": 11142804
+      },
+      {
+        "name": "_raw_spin_unlock",
+        "namespace": "",
+        "entry_offset": 11032328,
+        "value_offset": 8680696,
+        "name_offset": 11142918
+      },
+      {
+        "name": "arm64_const_caps_ready",
+        "namespace": "",
+        "entry_offset": 11033000,
+        "value_offset": 12662024,
+        "name_offset": 11134255
+      },
+      {
+        "name": "cpu_hwcap_keys",
+        "namespace": "",
+        "entry_offset": 11037020,
+        "value_offset": 12662032,
+        "name_offset": 11134295
+      },
+      {
+        "name": "cpu_hwcaps",
+        "namespace": "",
+        "entry_offset": 11037032,
+        "value_offset": 12662008,
+        "name_offset": 11134310
+      },
+      {
+        "name": "del_timer",
+        "namespace": "",
+        "entry_offset": 11038304,
+        "value_offset": 721672,
+        "name_offset": 11148726
+      },
+      {
+        "name": "del_timer_sync",
+        "namespace": "",
+        "entry_offset": 11038316,
+        "value_offset": 720632,
+        "name_offset": 11148736
+      },
+      {
+        "name": "disable_irq_nosync",
+        "namespace": "",
+        "entry_offset": 11039864,
+        "value_offset": 616360,
+        "name_offset": 11144566
+      },
+      {
+        "name": "enable_irq",
+        "namespace": "",
+        "entry_offset": 11041448,
+        "value_offset": 622240,
+        "name_offset": 11144604
+      },
+      {
+        "name": "finish_wait",
+        "namespace": "",
+        "entry_offset": 11042912,
+        "value_offset": 542048,
+        "name_offset": 11141130
+      },
+      {
+        "name": "free_irq",
+        "namespace": "",
+        "entry_offset": 11043656,
+        "value_offset": 618672,
+        "name_offset": 11144650
+      },
+      {
+        "name": "gpiod_add_lookup_table",
+        "namespace": "",
+        "entry_offset": 11101568,
+        "value_offset": 3911488,
+        "name_offset": 11196971
+      },
+      {
+        "name": "gpiod_direction_input",
+        "namespace": "",
+        "entry_offset": 11101604,
+        "value_offset": 3919048,
+        "name_offset": 11197021
+      },
+      {
+        "name": "gpiod_get",
+        "namespace": "",
+        "entry_offset": 11101664,
+        "value_offset": 3932904,
+        "name_offset": 11197093
+      },
+      {
+        "name": "gpiod_get_raw_value",
+        "namespace": "",
+        "entry_offset": 11101808,
+        "value_offset": 3917504,
+        "name_offset": 11197338
+      },
+      {
+        "name": "gpiod_put",
+        "namespace": "",
+        "entry_offset": 11101868,
+        "value_offset": 3927624,
+        "name_offset": 11197448
+      },
+      {
+        "name": "gpiod_remove_lookup_table",
+        "namespace": "",
+        "entry_offset": 11101892,
+        "value_offset": 3911576,
+        "name_offset": 11197474
+      },
+      {
+        "name": "gpiod_set_raw_value",
+        "namespace": "",
+        "entry_offset": 11101976,
+        "value_offset": 3917800,
+        "name_offset": 11197657
+      },
+      {
+        "name": "gpiod_to_irq",
+        "namespace": "",
+        "entry_offset": 11102048,
+        "value_offset": 3908856,
+        "name_offset": 11197782
+      },
+      {
+        "name": "init_timer_key",
+        "namespace": "",
+        "entry_offset": 11048216,
+        "value_offset": 721648,
+        "name_offset": 11148751
+      },
+      {
+        "name": "init_wait_entry",
+        "namespace": "",
+        "entry_offset": 11048228,
+        "value_offset": 542008,
+        "name_offset": 11141142
+      },
+      {
+        "name": "iounmap",
+        "namespace": "",
+        "entry_offset": 11048624,
+        "value_offset": 140984,
+        "name_offset": 11134634
+      },
+      {
+        "name": "jiffies",
+        "namespace": "",
+        "entry_offset": 11051300,
+        "value_offset": 12085632,
+        "name_offset": 11150057
+      },
+      {
+        "name": "kfree",
+        "namespace": "",
+        "entry_offset": 11052020,
+        "value_offset": 1650712,
+        "name_offset": 11159400
+      },
+      {
+        "name": "kmalloc_caches",
+        "namespace": "",
+        "entry_offset": 11052284,
+        "value_offset": 11015616,
+        "name_offset": 11157505
+      },
+      {
+        "name": "kmalloc_order",
+        "namespace": "",
+        "entry_offset": 11052296,
+        "value_offset": 1445152,
+        "name_offset": 11157520
+      },
+      {
+        "name": "kmem_cache_alloc",
+        "namespace": "",
+        "entry_offset": 11052308,
+        "value_offset": 1654088,
+        "name_offset": 11159406
+      },
+      {
+        "name": "kthread_create_on_node",
+        "namespace": "",
+        "entry_offset": 11052896,
+        "value_offset": 428280,
+        "name_offset": 11138526
+      },
+      {
+        "name": "kthread_should_stop",
+        "namespace": "",
+        "entry_offset": 11052956,
+        "value_offset": 427384,
+        "name_offset": 11138842
+      },
+      {
+        "name": "kthread_stop",
+        "namespace": "",
+        "entry_offset": 11052968,
+        "value_offset": 432304,
+        "name_offset": 11138862
+      },
+      {
+        "name": "memset",
+        "namespace": "",
+        "entry_offset": 11054828,
+        "value_offset": 8543168,
+        "name_offset": 11308688
+      },
+      {
+        "name": "misc_deregister",
+        "namespace": "",
+        "entry_offset": 11055116,
+        "value_offset": 4597088,
+        "name_offset": 11217624
+      },
+      {
+        "name": "misc_register",
+        "namespace": "",
+        "entry_offset": 11055128,
+        "value_offset": 4596584,
+        "name_offset": 11217640
+      },
+      {
+        "name": "mod_timer",
+        "namespace": "",
+        "entry_offset": 11055836,
+        "value_offset": 723384,
+        "name_offset": 11148777
+      },
+      {
+        "name": "msleep",
+        "namespace": "",
+        "entry_offset": 11056160,
+        "value_offset": 725440,
+        "name_offset": 11148805
+      },
+      {
+        "name": "mutex_lock",
+        "namespace": "",
+        "entry_offset": 11056376,
+        "value_offset": 8669160,
+        "name_offset": 11142104
+      },
+      {
+        "name": "mutex_unlock",
+        "namespace": "",
+        "entry_offset": 11056436,
+        "value_offset": 8669784,
+        "name_offset": 11142212
+      },
+      {
+        "name": "noop_llseek",
+        "namespace": "",
+        "entry_offset": 11058968,
+        "value_offset": 1726496,
+        "name_offset": 11160413
+      },
+      {
+        "name": "of_machine_is_compatible",
+        "namespace": "",
+        "entry_offset": 11059796,
+        "value_offset": 6058512,
+        "name_offset": 11257112
+      },
+      {
+        "name": "param_ops_bool",
+        "namespace": "",
+        "entry_offset": 11060696,
+        "value_offset": 8750600,
+        "name_offset": 11137918
+      },
+      {
+        "name": "param_ops_charp",
+        "namespace": "",
+        "entry_offset": 11060720,
+        "value_offset": 8750632,
+        "name_offset": 11137975
+      },
+      {
+        "name": "param_ops_uint",
+        "namespace": "",
+        "entry_offset": 11060792,
+        "value_offset": 8750760,
+        "name_offset": 11138071
+      },
+      {
+        "name": "platform_device_register_full",
+        "namespace": "",
+        "entry_offset": 11115320,
+        "value_offset": 4641040,
+        "name_offset": 11220467
+      },
+      {
+        "name": "platform_device_unregister",
+        "namespace": "",
+        "entry_offset": 11115332,
+        "value_offset": 4643400,
+        "name_offset": 11220497
+      },
+      {
+        "name": "prepare_to_wait_event",
+        "namespace": "",
+        "entry_offset": 11064260,
+        "value_offset": 542176,
+        "name_offset": 11141174
+      },
+      {
+        "name": "printk",
+        "namespace": "",
+        "entry_offset": 11064296,
+        "value_offset": 8634528,
+        "name_offset": 11144286
+      },
+      {
+        "name": "request_threaded_irq",
+        "namespace": "",
+        "entry_offset": 11067668,
+        "value_offset": 624960,
+        "name_offset": 11144894
+      },
+      {
+        "name": "sched_setscheduler",
+        "namespace": "",
+        "entry_offset": 11121236,
+        "value_offset": 463672,
+        "name_offset": 11140482
+      },
+      {
+        "name": "schedule",
+        "namespace": "",
+        "entry_offset": 11068748,
+        "value_offset": 8664080,
+        "name_offset": 11140544
+      },
+      {
+        "name": "usleep_range",
+        "namespace": "",
+        "entry_offset": 11079488,
+        "value_offset": 8676952,
+        "name_offset": 11149077
+      },
+      {
+        "name": "wake_up_process",
+        "namespace": "",
+        "entry_offset": 11080904,
+        "value_offset": 467992,
+        "name_offset": 11140608
+      }
+    ],
+    "limitations": [
+      "公开 QSDK 有不同补丁/配置，未证明 C 类型和布局 ABI 完全一致",
+      "Linaro GCC 7.5.0 不是原 QWRT r47815 工具链",
+      "导出记录可证明符号存在，不能证明函数签名或运行正确",
+      "尚未在 QWRT 5.4.213 加载或完成 RJ11 双向通话验收"
+    ]
+  },
+  "ubi": {
+    "peb_size": 262144,
+    "min_io": 4096,
+    "kernel_pebs": 23,
+    "rootfs_pebs": 177,
+    "minimum_partition_bytes_before_bad_block_reserve": 54263808
+  },
+  "phone_upstream_versions": {
+    "driver": "0.3.0",
+    "fxsd": "0.7.0",
+    "luci-app-fxs": "0.7.0",
+    "commit": "f26f9f5a4bfbee391a3a15c9dab886c96d7ca539",
+    "phone_source_files": 74,
+    "private_library_source_files": 171,
+    "driver_build_commit": "5a5c87471d090f015a0ecaf1f407a8b0082d8e5c",
+    "kernel_source_files_identical": 9,
+    "sip_default": false,
+    "sip_runtime_dependencies_integrated": false
+  },
+  "automated_validation": {
+    "unique_regression_tests_covered": 195,
+    "initial_full_run": {
+      "tests_run": 195,
+      "passed": 192,
+      "failures": 0,
+      "errors": 3,
+      "skipped": 0,
+      "error_type": "Python UCI mock-command wall-clock timeout"
+    },
+    "successful_retests": {
+      "tests_passed": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "includes_all_three_initial_errors": true,
+      "fixture_command_timeout_seconds": 30
+    },
+    "outstanding_test_failures": 0,
+    "target_runtime": "complete built QWRT libraries under QEMU",
+    "phone_payload_audit": {
+      "version": "1.2.8",
+      "checks_passed": 73,
+      "checks": [
+        "driver-archive-build-provenance-retained",
+        "complete-phone-source-74-blobs",
+        "factory:version",
+        "factory:upgrade-tail",
+        "factory:driver-sha256",
+        "factory:3proxy-absent:/usr/bin",
+        "factory:3proxy-absent:/etc/init.d",
+        "factory:3proxy-absent:/etc/rc.d",
+        "factory:3proxy-absent:/usr/lib/opkg/info",
+        "factory:config:enabled",
+        "factory:config:sip",
+        "factory:config:hd",
+        "factory:config:led",
+        "factory:config:led_ready",
+        "factory:config:led_ringing",
+        "factory:config:led_offhook",
+        "factory:service-version",
+        "factory:luci-version",
+        "factory:source-commit",
+        "factory:new-status-fields",
+        "factory:dnd-translated",
+        "factory:number-format-translated",
+        "factory:project-links-removed",
+        "factory:phone-check-translated",
+        "factory:new-startup-arguments",
+        "factory:new-dnd-default-off",
+        "factory:sip-port-only-mode",
+        "factory:system-component:/sbin/ubusd",
+        "factory:system-component:/lib/libubus.so.20210603",
+        "factory:system-component:/lib/libubox.so",
+        "factory:system-component:/etc/init.d/ubus-at-daemon",
+        "factory:static-aarch64:fxsd",
+        "factory:binary-usage-exec:fxsd",
+        "factory:static-aarch64:fxs-bringup",
+        "factory:binary-usage-exec:fxs-bringup",
+        "factory:target-shell-syntax:fxsd.init",
+        "factory:target-shell-syntax:fxs.rpcd",
+        "factory:node-syntax:blocked.js",
+        "factory:node-syntax:history.js",
+        "factory:node-syntax:phone.js",
+        "factory:node-syntax:settings.js",
+        "factory:node-syntax:speeddial.js",
+        "sysupgrade:version",
+        "sysupgrade:upgrade-tail",
+        "sysupgrade:driver-sha256",
+        "sysupgrade:3proxy-absent:/usr/bin",
+        "sysupgrade:3proxy-absent:/etc/init.d",
+        "sysupgrade:3proxy-absent:/etc/rc.d",
+        "sysupgrade:3proxy-absent:/usr/lib/opkg/info",
+        "sysupgrade:config:enabled",
+        "sysupgrade:config:sip",
+        "sysupgrade:config:hd",
+        "sysupgrade:config:led",
+        "sysupgrade:config:led_ready",
+        "sysupgrade:config:led_ringing",
+        "sysupgrade:config:led_offhook",
+        "sysupgrade:service-version",
+        "sysupgrade:luci-version",
+        "sysupgrade:source-commit",
+        "sysupgrade:new-status-fields",
+        "sysupgrade:dnd-translated",
+        "sysupgrade:number-format-translated",
+        "sysupgrade:project-links-removed",
+        "sysupgrade:phone-check-translated",
+        "sysupgrade:new-startup-arguments",
+        "sysupgrade:new-dnd-default-off",
+        "sysupgrade:sip-port-only-mode",
+        "sysupgrade:system-component:/sbin/ubusd",
+        "sysupgrade:system-component:/lib/libubus.so.20210603",
+        "sysupgrade:system-component:/lib/libubox.so",
+        "sysupgrade:system-component:/etc/init.d/ubus-at-daemon",
+        "sysupgrade:static-aarch64:fxsd",
+        "sysupgrade:static-aarch64:fxs-bringup"
+      ],
+      "hardware_calls_tested": false
+    }
+  }
+}

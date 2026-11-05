@@ -1,0 +1,14 @@
+{
+  "port": "/dev/ttyUSB3",
+  "command": "AT+QDAI?",
+  "is_raw": 0,
+  "sendonly": 0,
+  "timeout": 3,
+  "end_flag": "default",
+  "end_flags_used": ["OK", "ERROR", "+CMS ERROR:", "+CME ERROR:", "NO CARRIER"],
+  "status": "success",
+  "response": "AT+QDAI?\r\r\n+QDAI: x,1,0,4,0,1,2,1,2\r\n\r\nOK\r\n",
+  "response_length": 43,
+  "end_flag_matched": "OK",
+  "response_time_ms": 6
+}

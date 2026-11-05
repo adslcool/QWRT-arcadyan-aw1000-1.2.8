@@ -1,0 +1,1107 @@
+{
+  "schema": 2,
+  "phone_commit": "f26f9f5a4bfbee391a3a15c9dab886c96d7ca539",
+  "base_kernel_package": "5.4.213-1-606f983e9fed006b50a91d394d80f588",
+  "original_zip_sha256": "36c5983d215c6a04bd2283757f5ff45df58cb472aa4984b27f2707705c3f4ecf",
+  "files": {
+    "vendor/librespeed-go_1.1.5-r5_aarch64_cortex-a53.ipk": "f907ba56b3e4593354c368a37eecf6c7283b7a8bc25cbc67117871809ca83e5f",
+    "phone/qwrt-kernel.config": "6f3db954984db931afa3b1fe2716fe902414d3799758697a3e322b6971bc79dc",
+    "vendor/luci-theme-argon_2.4.3-r20250722_all.ipk": "4af8715a854511c9b5613b9b7067ff78033670bdbe655e0ad4c012c97a925984",
+    "vendor/si3226x_patch.bin": "a8c305841adf327e180bff6cbac92ada5a0625ca2d9e8c22733e4b3f2b8cad99",
+    "vendor/openwrt-aw1000-phone.tar.xz": "1389f444e6caa3dad19b8e70554a1ed81a0664d81fd9b8089901e856e6d153fe",
+    "vendor/aw1000-phone-driver.tar.gz": "efe9d012a404a1cdc4c30bc9d5cc526fe355fc2b1220d95f3eadba0a06641d48",
+    "vendor/mwan3-2.11.7-2.tar.xz": "7fcf90e8b0265a6d1d1bde3c47794685bba4c0a7e70c69531c65e9f8caf2e047",
+    "vendor/luci-apps.tar.xz": "29fa935cb09216f0aba44f9131a2f5fe3d482d0eb53c3136d430eccc799c9716",
+    "vendor/phone-libs.tar.xz": "92c35d54484466609e86b7ea02c6b1f3c5f272dec4ab4980cb683f4d4ef30738",
+    "phone/upstream/.github/workflows/build.yml": "53ae9cdec22f63a4c1417c3259e80f8ac7b07d64636008bd31822804a3bf3266",
+    "phone/upstream/.gitignore": "5c619b01340f8f8c89a6562ac74b111fefca5f3dcf96869725f48ceff97d11b8",
+    "phone/upstream/LICENSE": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+    "phone/upstream/README.md": "07e0f115c7ffa8b4ef31bd648bef9a135a3851b5ed27586383ae591edb96cf6b",
+    "phone/upstream/build.sh": "dd1ddd08cabe021fc40c94754b82386d0f5b9bd7c946160f29d670804ef7dbea",
+    "phone/upstream/docs/hardware.md": "c631503a3a6e4760dca4cc864110a244134f4f86757b2a0a8dae40906ff8a7b1",
+    "phone/upstream/fxsd/Makefile": "93ad6c23563a808a839eee72626577de60480b1ed8bf156b83ae15355614d37b",
+    "phone/upstream/fxsd/src/aw1000_cfg.c": "cf5fff1a1e5cfa2118e159ed844fb6ccde45d435034617eaf30d38d85b1130ad",
+    "phone/upstream/fxsd/src/bringup.c": "be86fcadbefe7a859546a14998f180d22ce1bc3b35f5af310dafc3101bddc8f7",
+    "phone/upstream/fxsd/src/bringup.h": "a786994eb665a4d05b23b5d755bd6b1fe46c4a8e599d4e35ea48acad0f69e718",
+    "phone/upstream/fxsd/src/bringup_main.c": "0c3acf2db6cbc4a2b6e9eb4d520c8a22ee0f7dc581fe8b0d0182a804cbd05209",
+    "phone/upstream/fxsd/src/cid.c": "9ecb8f1a3ce23f7498621b710aaad092772a9e680048e9c4130da578887aaebb",
+    "phone/upstream/fxsd/src/cid.h": "1228d469ba7c639c37e9dd73bbd63e5c286d29e26312cdc1a83f11107b436dad",
+    "phone/upstream/fxsd/src/clcc.c": "7854b959f7e806fe67ff1f9eb5d3be80d637ce7d8a75c723e47736505e5f9cc9",
+    "phone/upstream/fxsd/src/clcc.h": "24f7fc8c0c5eae0512f4ea2662427615a57a2e6204165a279f01fc6f4563d115",
+    "phone/upstream/fxsd/src/country.c": "5db78db30402d3794d3c9703e4350d17cf9b1a6a67ef994693f20add05a463a6",
+    "phone/upstream/fxsd/src/country.h": "7ed59bcf5c6e4d638c531c95e2e8608e6cb7fbe4dfc56164f3aa12c781022bb7",
+    "phone/upstream/fxsd/src/fxsd_main.c": "e355cac30dbb6ff825ef214e969236b6d0995646b3583c5ce122abbf387a79e7",
+    "phone/upstream/fxsd/src/fxsdev.c": "8917793daf74196838d50e6f2868c1ba6f60ab5c55fbf316682d895831f7d1cc",
+    "phone/upstream/fxsd/src/fxsdev.h": "cf8c364bef39e05166927b2fc488d7fbdda3a20951ab4a6cb8f41ad3c61ef1f2",
+    "phone/upstream/fxsd/src/line.c": "5974e075ac520a9c4dcadc1db5ce7151c41e3fecadf7aa910b504ee4c57b58f2",
+    "phone/upstream/fxsd/src/line.h": "77df74e181d3960ff1780d080d84e8414392d21a1e22dd3eaae7add12b45d743",
+    "phone/upstream/fxsd/src/modem.c": "cdbea2729247c7c9c28261fa5067bc972dc1a4a951c43d94f40fbe1ba589666a",
+    "phone/upstream/fxsd/src/modem.h": "cd0ff889693ee259af5eb7a8208fb67118801b9d85b163d33040f051bd778b37",
+    "phone/upstream/fxsd/src/patch.c": "e67a5d311bc8e2894487cc216301295ed47bbf5829b3dfc3b41241c17be8f8f0",
+    "phone/upstream/fxsd/src/patch.h": "34ab7af8155c50cbd165b5184236354be5b894ffddb26fd7ae9eceaa7a4edbf8",
+    "phone/upstream/fxsd/src/pcmsock.c": "4b381e1e9fa6bc6f4c608b8fde736976ca6b56fd4497f51f3549e5281fb1b168",
+    "phone/upstream/fxsd/src/pcmsock.h": "aeaf3db7a8ce75d8a30ddc37a219ae53d58db29212c4e8bab64c95d33c7223c5",
+    "phone/upstream/fxsd/src/si3226x.c": "c88c0810e48c329b9db171055304c3f20dd559d6234d15ee40ab02dac145f24f",
+    "phone/upstream/fxsd/src/si3226x.h": "e36a9dfd1a1a80ece9c1ecb6b0a3b09763e513c642b7595c93979262fad4f657",
+    "phone/upstream/fxsd/src/si3226x_map.h": "cf53b2aef9b99aad678277e3a520e5ade32ba7442cfbf5ccbc029a21c0bb1571",
+    "phone/upstream/fxsd/src/si_line.c": "5108d546be36337e7003b77ec9acb52381dbab03dfe9871652f2441f10eb936b",
+    "phone/upstream/fxsd/src/si_line.h": "16901dc0339c2df5341240bab4095574b48d5f8910cfa95f88a12f6efdd3431f",
+    "phone/upstream/fxsd/src/slic.h": "d8475145c2f2b3c067b0be59a0af7bc8d9b8940ca4ca3ad825ac5a4b11a92e3c",
+    "phone/upstream/fxsd/src/urc.c": "0d5703db4ca03f09e1da0a9e29a1131814c33b6bb75d7a943ae9022f17e9120a",
+    "phone/upstream/fxsd/src/urc.h": "1b9bdee3a0eafb0625c9054cf99d47b80eb41810e249d0aaad4019ae63f19b27",
+    "phone/upstream/fxsd/src/voip.c": "794042db137dbd334d551c998a9f193d375343f76cf9429a6d12cbaa766e1d19",
+    "phone/upstream/fxsd/src/voip.h": "8791f120344c0d4294c74daa035ec21678aaca53206f7c8a1c4480329891976b",
+    "phone/upstream/fxsd/src/voip_map.c": "6fc7939b8d3536641dcbdb7ec446ed5ce52d0810dcac18554a407d3cbfba93f3",
+    "phone/upstream/fxsd/tests/test_line.c": "9966fb92460006578053c1f910b10f0293eba03c4cd9178cd1eddb496a5c9496",
+    "phone/upstream/kernel/aw1000-fxs/Makefile": "b57a515d754e1fcc577b82d02eaeb534b797f4c6277cbca29cbb16c525bf6b55",
+    "phone/upstream/kernel/aw1000-fxs/fxs.h": "b6073d4e6caaf4f33b9804dec95545c7df95ae338759d99be2857345f5ee3a08",
+    "phone/upstream/kernel/aw1000-fxs/fxs_clk.c": "d16e75c3084e04b8cac1a08c7efb35637c896a99aa07844c07e6b0ff913c65fc",
+    "phone/upstream/kernel/aw1000-fxs/fxs_main.c": "981657c2eb2643efba48ef94a544f35ec7abec8fe40930a077cff64e9520fc24",
+    "phone/upstream/kernel/aw1000-fxs/fxs_pcm.c": "fc272c3c231089e95f4326766984e194d643a8bbf9b7459a265cdc74febd02c2",
+    "phone/upstream/kernel/aw1000-fxs/fxs_proto.h": "4f1d7c8f17b1e990c1f06ee629f0222a591642717fec65a4c258cd8f7226b317",
+    "phone/upstream/kernel/aw1000-fxs/fxs_regs.h": "67553789191e53b73212ba1bc8d22bcd3ebe5fd66c2a5ddb421bd7c15694b8a8",
+    "phone/upstream/kernel/aw1000-fxs/fxs_spi.c": "88d75d56d9069c1818f2e64dea69043497831b8f8e68aa1f87bbb56ecdb7041a",
+    "phone/upstream/kernel/aw1000-fxs/fxs_uapi.h": "4d1fbd073c912bdca1e4e02f804047b9af99e969a76a8281c530a85caa6f0842",
+    "phone/upstream/openwrt/aw1000-fxs/Makefile": "49896fa161db9499f94f87427a3511e4cd0b54c93a1162787491f25045b8de38",
+    "phone/upstream/openwrt/fxsd/Makefile": "359f6af915503acbb8d565a7ee51fb27f71295d6c9198a179a40739ff389f895",
+    "phone/upstream/openwrt/fxsd/files/fxs.config": "8526a6d9935b80901f433dd879bcd1a95d565880ef40b1410d9af8d16ac94c86",
+    "phone/upstream/openwrt/fxsd/files/fxs.defaults": "f16f60cb0aa382cea7be05d427911f4ba3022f8be8b097f1ab2bbe066ee18d45",
+    "phone/upstream/openwrt/fxsd/files/fxsd.init": "3a90d9bf6f36349c2d7d34b2b79c7f5529c299f891f5a34c0fd8910537799620",
+    "phone/upstream/openwrt/luci-app-fxs/Makefile": "2302b3e10382af0b20e92ebfad63628be18e83dff6bd2c847db5e3e5c3b5cfd6",
+    "phone/upstream/openwrt/luci-app-fxs/files/acl.json": "149a9b44e42fa5862cad9ce0e41552502a09431a9dac944f924472834f87cf86",
+    "phone/upstream/openwrt/luci-app-fxs/files/blocked.js": "5c6b9852191bbb163ee99896f425b4dfc88abe5c5b47bcf370533c0d3acaf905",
+    "phone/upstream/openwrt/luci-app-fxs/files/fxs.rpcd": "1cc3a1b830bf6714a6343e6a90856468010262201f15f801c9f4546ddd54099a",
+    "phone/upstream/openwrt/luci-app-fxs/files/history.js": "c7197c24e575b643917ca33e359a5a055fd58c36c04e8c44422adaf5340f09cd",
+    "phone/upstream/openwrt/luci-app-fxs/files/menu.json": "5d58fd4b4d47dd05007706569adf35e8db367ce245b733b69884e363163fefb9",
+    "phone/upstream/openwrt/luci-app-fxs/files/phone.js": "7f84222162bbc0a75c6635ca6a89ce79bfb614499ae970b196d6236440abd879",
+    "phone/upstream/openwrt/luci-app-fxs/files/settings.js": "cb259ef33b3005f31f99c274919d9d56974fa7e56b995709409806925675267e",
+    "phone/upstream/openwrt/luci-app-fxs/files/speeddial.js": "1110015cf8fbc7ffaba4b6e3ee92106e0b645e80ea75c1ba1b4c2ad4baffbc5f",
+    "phone/upstream/scripts/Dockerfile.sdk": "87472e5ad79bcb150218447c6930b7c40ae82823aa60a326a64c0303da27340d",
+    "phone/upstream/scripts/build.sh": "1be7a5d0d104ab3ebd366b72c6f0a3fff41f09aa1cedefbd2ffe00ddaebe3236",
+    "phone/upstream/scripts/build_pkgs.sh": "72b22c05164cec2f63b37b41bf3b40eba2b89884e401ec95e254f8bb64dcbe55",
+    "phone/upstream/scripts/noobwrt_kernel.sh": "8ccc8f9ff264b3177a351c20ca3b9296b1d19b7caee8df240dd00da5d38add31",
+    "phone/upstream/scripts/official_kernel.sh": "4683bafdf50e730ec5c101419089687f1b2284e9915d9a3333b06cdaef29fbd9",
+    "phone/upstream/scripts/serial_log.py": "ff1454803da8fe8fdb85238e6ca53ceeff0388ad96665525455ecf2354832b26",
+    "phone/upstream/tools/Makefile": "1c075569cac9c6111665a08da6f24aa0055c4e0ab883161e73629b260b704ef3",
+    "phone/upstream/tools/fxsctl.c": "355a297f67828f8f55d23ae99b8627cf636cf42b58140924d25e341792f2a0ae",
+    "phone/upstream/tools/mkpatch.py": "6e20a45ab5242c00d074adff49cbdd45c23ff28d22b20bcfeeb2f6ba94b9599d",
+    "phone/upstream/tools/pcm_sample.sh": "7b26235c6c5de09b451d3d3edc5926c79f48c7b2cb7d6a09d87bb73c070ba900",
+    "phone/upstream/tools/urc_probe.sh": "b9764ea0c42960c85bf72d6f737fa3ef0aa4fec2fd5e0157045b43599afe20bf"
+  },
+  "phone_git_blobs": {
+    ".github/workflows/build.yml": "cc6ce9e432fb72ac24973aec7fd88922d9eaf3b8",
+    ".gitignore": "929e15b9d920a06c8bd648a5910ac0bb59b48839",
+    "LICENSE": "3912109b5cd65a68039d473c11c9f7ac2303e06d",
+    "README.md": "bb9b25f540fefbcacfeca0646df9c7ee0f4c8cba",
+    "build.sh": "6511324d11e1e76135d57a4f0b974ef157904baf",
+    "docs/hardware.md": "c6a3fe1de9334e4c60f87365c0881bb7bbceab7b",
+    "fxsd/Makefile": "d023f0f904a768ffecb8bf150ead06b4d3a9602a",
+    "fxsd/src/aw1000_cfg.c": "abda5c65d5ca9dac4ca4841bd5402073da0aaa1f",
+    "fxsd/src/bringup.c": "d41ebafef42f1f720e24f4fa08041cc5957313b5",
+    "fxsd/src/bringup.h": "9db840509dbdead592c5862b9efabd9ee65cfd68",
+    "fxsd/src/bringup_main.c": "a79239644063e47b2f59ad7902e8181e5438a142",
+    "fxsd/src/cid.c": "ce5ad611ded95bef44d8dbe1fe8a72ffcfa59eb3",
+    "fxsd/src/cid.h": "01d72ca64b67e9495f6d141bf25f47688540de42",
+    "fxsd/src/clcc.c": "357ba621155edf1ae0855fd19e6a1ec443439d68",
+    "fxsd/src/clcc.h": "1ca43adade64841b484cdb89c9e536b8f5993973",
+    "fxsd/src/country.c": "2a8e4932a263d26eff54fa4900fd5b2922d63d73",
+    "fxsd/src/country.h": "88be373553a5ac224ec6a6ecf9e6e99a5c5c1767",
+    "fxsd/src/fxsd_main.c": "228a60c6385e27159d5ac9b597875e5d05bf03d6",
+    "fxsd/src/fxsdev.c": "02e85337fec5397e0e6b03cb8059eb0f0a8bd230",
+    "fxsd/src/fxsdev.h": "ca389396451f6bdc304eb9f1b4baa2aae6cf9b1a",
+    "fxsd/src/line.c": "00b122b5aeacf74384d777f1967a7e396dd04005",
+    "fxsd/src/line.h": "eb1c97a5ff89a8774717719e78cc7f2d54ae4d19",
+    "fxsd/src/modem.c": "173a9a126178f7645b574dcbf51d8b7fe5b80034",
+    "fxsd/src/modem.h": "b622a7e7db04fbfc11d26971ecec476fbc398d5b",
+    "fxsd/src/patch.c": "5dfd85252ccf9acb979b22f8a368b6e2948e623f",
+    "fxsd/src/patch.h": "731f4152128480505d26ebbc91d21ca42227d972",
+    "fxsd/src/pcmsock.c": "d6b9ccba63559d31faf0277e92a7b4af32af9665",
+    "fxsd/src/pcmsock.h": "709b34866d51ded40e1aa77531d2587f4ddf1eb9",
+    "fxsd/src/si3226x.c": "eb114081a48509c1a50cee85d1a8b14ba6575ed4",
+    "fxsd/src/si3226x.h": "3284cf59e1501ed82ba639dcda5d72c1abcc556f",
+    "fxsd/src/si3226x_map.h": "7fbfa3fa49a992c38ebf2dcd547cffc4f299b250",
+    "fxsd/src/si_line.c": "173a00bc4002ec92714a31a0e19f2030f8ee1a96",
+    "fxsd/src/si_line.h": "6e54536d88ca8fa0e7a941907477eb4952901879",
+    "fxsd/src/slic.h": "b29162df390d46109713f94eb322dbdc92e859ca",
+    "fxsd/src/urc.c": "6df22ee3ce276ef1480c5b494fd3467101a2411d",
+    "fxsd/src/urc.h": "a25aa6eb236dee4ba9d9921c570a02cddeee0545",
+    "fxsd/src/voip.c": "484adcb4ccfd55849349543d9123269489e88196",
+    "fxsd/src/voip.h": "f45940eb0f579c74e00a92f473b5d4cc33ff53e1",
+    "fxsd/src/voip_map.c": "29591527d3849321659eee598376353b7ac2f14c",
+    "fxsd/tests/test_line.c": "d3bdcab475024bade73344bc841bbecad2de02fd",
+    "kernel/aw1000-fxs/Makefile": "b52d548fece8d2c3e9cde49ff86b6f18308a79e0",
+    "kernel/aw1000-fxs/fxs.h": "7adb5fd5120ac6560c8fab84034199d42bf69586",
+    "kernel/aw1000-fxs/fxs_clk.c": "5f6f8c25686325f004622754ce24f05408aab1b3",
+    "kernel/aw1000-fxs/fxs_main.c": "0479bc6dcff4b577c17171bcb8de9fa9afdbb884",
+    "kernel/aw1000-fxs/fxs_pcm.c": "1c35966ac8cfcf5d0ff1c2627c8381a03d5b03aa",
+    "kernel/aw1000-fxs/fxs_proto.h": "b35168e7e0289f2e3c48dc1ed48020fb53c2a2cf",
+    "kernel/aw1000-fxs/fxs_regs.h": "6c3766b046ebc70a6081c2d962fb6bae50bdaced",
+    "kernel/aw1000-fxs/fxs_spi.c": "2c67d2812138739905190245e83685afc235729d",
+    "kernel/aw1000-fxs/fxs_uapi.h": "15d19814fdb98f815b35e901a3ebe43727493e5f",
+    "openwrt/aw1000-fxs/Makefile": "c3305be7cbd34ee711a7fdea94edade2b12f6259",
+    "openwrt/fxsd/Makefile": "b6a01d983d7036de3ff981ce0fc660b24b62161d",
+    "openwrt/fxsd/files/fxs.config": "5e785e1b84255bb020ae48381874d7d8b11c923b",
+    "openwrt/fxsd/files/fxs.defaults": "9cd2d92375dfa75431659716d44f6a0438fad7ed",
+    "openwrt/fxsd/files/fxsd.init": "1e8ee8c1bbbc934971cde7fc1fcb614fd25d90c0",
+    "openwrt/luci-app-fxs/Makefile": "2a974d5d231c477bcb60d1f8bb2cb8097beeb14a",
+    "openwrt/luci-app-fxs/files/acl.json": "958831d68b0031739d6ab1f7f723e5ec19fcd938",
+    "openwrt/luci-app-fxs/files/blocked.js": "2e62caad6f216a5a711efedd18612de4f06a78e8",
+    "openwrt/luci-app-fxs/files/fxs.rpcd": "a34416dbbad942caff4251aaaf39ecc6250ee1df",
+    "openwrt/luci-app-fxs/files/history.js": "ae46bd8c4e3f10668936548d94013ec95f52744e",
+    "openwrt/luci-app-fxs/files/menu.json": "672e2cfeea0f66505ef4a971d755d3f3414d368c",
+    "openwrt/luci-app-fxs/files/phone.js": "e55b0ac3b75c50ad1c0a41ef66a8b6a11fb1ec77",
+    "openwrt/luci-app-fxs/files/settings.js": "1514511f730b366f5396be8167d7073e8ea7e988",
+    "openwrt/luci-app-fxs/files/speeddial.js": "8451da9da25428cfba680ad4b814862612a4a9e3",
+    "scripts/Dockerfile.sdk": "c3c045b7b414b04763dd03c6328e7b513ea317da",
+    "scripts/build.sh": "460354491ff00ea069702dc2c3549049f9a1f1a6",
+    "scripts/build_pkgs.sh": "f092035d71804dac3e47276ce4f1a17aa36d8988",
+    "scripts/noobwrt_kernel.sh": "53193c43ca564e66e93ced016a30cf53d1c63812",
+    "scripts/official_kernel.sh": "a79f43c08beb013b9ac7e24b678af7b3a2cedbdf",
+    "scripts/serial_log.py": "0e7c7589ec65530c77b05964b85a72b1806ed7ce",
+    "tools/Makefile": "935794ce688f3312d5bccfb263ad51243c3fcb22",
+    "tools/fxsctl.c": "7f129af4ca7254bfc9f49f3c554a532a10e5db4f",
+    "tools/mkpatch.py": "500b3278ad00da5d17148cdfd36c92b52d74a11d",
+    "tools/pcm_sample.sh": "65c06a61b36dc7afbf3170bac465b3a6707e78a8",
+    "tools/urc_probe.sh": "d9078b915f90e93f7918519ec530f528e7c97f4c"
+  },
+  "phone_archive": "vendor/openwrt-aw1000-phone.tar.xz",
+  "base_kernel_image_sha256": "2cf34abbdeff69411f4fa70ed000de28ea83165586441f8315eb75ea25344d9c",
+  "base_kernel_compiler": "OpenWrt GCC 7.5.0 r47815-ddcc976f7b",
+  "bundled_phone_driver": {
+    "path": "vendor/aw1000-phone-driver.tar.gz",
+    "build_project_version": "1.2.5",
+    "profile": "public-qsdk-experimental",
+    "hardware_verified": false,
+    "phone_commit": "5a5c87471d090f015a0ecaf1f407a8b0082d8e5c",
+    "kernel_source_sha256": {
+      "kernel/aw1000-fxs/Makefile": "b57a515d754e1fcc577b82d02eaeb534b797f4c6277cbca29cbb16c525bf6b55",
+      "kernel/aw1000-fxs/fxs.h": "b6073d4e6caaf4f33b9804dec95545c7df95ae338759d99be2857345f5ee3a08",
+      "kernel/aw1000-fxs/fxs_clk.c": "d16e75c3084e04b8cac1a08c7efb35637c896a99aa07844c07e6b0ff913c65fc",
+      "kernel/aw1000-fxs/fxs_main.c": "981657c2eb2643efba48ef94a544f35ec7abec8fe40930a077cff64e9520fc24",
+      "kernel/aw1000-fxs/fxs_pcm.c": "fc272c3c231089e95f4326766984e194d643a8bbf9b7459a265cdc74febd02c2",
+      "kernel/aw1000-fxs/fxs_proto.h": "4f1d7c8f17b1e990c1f06ee629f0222a591642717fec65a4c258cd8f7226b317",
+      "kernel/aw1000-fxs/fxs_regs.h": "67553789191e53b73212ba1bc8d22bcd3ebe5fd66c2a5ddb421bd7c15694b8a8",
+      "kernel/aw1000-fxs/fxs_spi.c": "88d75d56d9069c1818f2e64dea69043497831b8f8e68aa1f87bbb56ecdb7041a",
+      "kernel/aw1000-fxs/fxs_uapi.h": "4d1fbd073c912bdca1e4e02f804047b9af99e969a76a8281c530a85caa6f0842"
+    }
+  },
+  "mwan3_legacy": {
+    "archive": "vendor/mwan3-2.11.7-2.tar.xz",
+    "version": "2.11.7-2",
+    "source": "https://github.com/openwrt/packages/tree/openwrt-22.03/net/mwan3",
+    "sha256": "7fcf90e8b0265a6d1d1bde3c47794685bba4c0a7e70c69531c65e9f8caf2e047",
+    "files": {
+      "Makefile": "cc93cdc3e2a22a65f1059a01f04ec1265bb8a45ca79d94be282c8bcb471b837a",
+      "files/etc/config/mwan3": "391fce13910b62ebfdecd4be1230ea06f5d1ede250c24f4aeaecfd7e4d355905",
+      "files/etc/hotplug.d/iface/15-mwan3": "d17652761438b7d0fc5c51fc4c57b87eb45ddfa8054c5a0d078f0516ce7c4f23",
+      "files/etc/hotplug.d/iface/16-mwan3-user": "baa8315b58b6a2f888fc59c9e60d7bd6231f1652eb26469e9b8932e39959954a",
+      "files/etc/init.d/mwan3": "bb8b4edf0dbe63c8687917646904e5d31b51b394eb943a29f2a8aea4173f1387",
+      "files/etc/mwan3.user": "ccc83d99334ff3c345a0de40e6057069ecc32d08ef826c1058e4820a68464d59",
+      "files/etc/uci-defaults/mwan3-migrate-flush_conntrack": "7c01acc45098c975042ac7d3e48c9fb0acf76642a67d14c44ba4d55cf91d2a45",
+      "files/lib/mwan3/common.sh": "e11d15816b31e69bcd2870e1d3b3d663d57755853b4955f6f00ea46bb285ecc5",
+      "files/lib/mwan3/mwan3.sh": "7836e767304ae8df3bac9b6f0099c6eb08a3fc77715beb3b8cb0cd7f82a019dc",
+      "files/usr/libexec/rpcd/mwan3": "0ad55907f86c89c2e33a4dd923654dbbc2d90a2324e154c7dbd6d7d6abb0fa0b",
+      "files/usr/sbin/mwan3": "e56c88dbd9cd41fbd417680809dc38420d8a05a70104bf9807daddddba89806a",
+      "files/usr/sbin/mwan3rtmon": "537402c47f97dbf32bdd02124121f9f8dd8d7fd31e4e3d8d26f392cb5fde967b",
+      "files/usr/sbin/mwan3track": "23d99e8cb1e93b48f70ebd450d4bb9c8a5d063dfd6a56c53748af82ebb680d12",
+      "src/sockopt_wrap.c": "c70eef9dfd5d534c41b4845ae039d2328fc0a1dd006dcb28d977c801df7f84b7",
+      "LICENSE": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670"
+    }
+  },
+  "internet_reference": {
+    "archive": "aw1000-lede-v1.50-main.zip",
+    "archive_sha256": "97e56d8abb4c5e89c1ff57b320ce7ad36f0721ce496f4ed1ed5011b958e14051",
+    "internet_py_sha256": "c832c2f31c1f05638ee8fe9510d5fc3ee79bb965cf939c0a5cc22525770722e0"
+  },
+  "arpbind": {
+    "repository": "https://github.com/immortalwrt/luci",
+    "commit": "d72e293e6fd698af75510b9018fb7e154ae219cc",
+    "package": "applications/luci-app-arpbind",
+    "archive": "vendor/luci-apps.tar.xz",
+    "sha256": "d85e6dd06f60c5bf1b68a874eb589ef3bcc2be185b34efef30c1985a05509507",
+    "license": "Apache-2.0",
+    "files": {
+      "root/etc/config/arpbind": "fab53ff67583f9e12b3bd48392daa109fe28ec0e53ebc498e77b6336b09876f9",
+      "root/etc/hotplug.d/iface/50-arpbind": "90f5ae48f5d1600bcd7e71128dbcb5c0b2050125fac51b0189251791b86ba3fc",
+      "root/etc/init.d/arpbind": "6d735bea6573a1a622eafa8a84b0abd8feaeb482e02c9f9d4a27850b3b2eda52",
+      "root/etc/uci-defaults/luci-arpbind": "f420e7c0b9203d91637e8fc82fb4fe8226a41223fc3f62f6a171f02417d7f453",
+      "root/usr/share/luci/menu.d/luci-app-arpbind.json": "3c2d2025413da88432b39bda88fbf97cfb1129ae381c36386ae44564af6fe6cd",
+      "root/usr/share/rpcd/acl.d/luci-app-arpbind.json": "afc7ee96ff31eb797231b88a1518dbb540131e32eaec65f502f386db32f58614",
+      "htdocs/luci-static/resources/view/arpbind.js": "5644c59ed2ec960ef60410a7de755f0610967d0cf496533250e4f21a3994e999",
+      "po/templates/arpbind.pot": "ce8104bf9af579acbdda45ac4fe4a9f754ee2e5245e0074efed20511d1db3c97",
+      "po/zh_Hans/arpbind.po": "1d1f0e594ad3a13841e247450e7ef9e1a03544e8bf3d3c4f68efbc48f4c4f543",
+      "Makefile": "7b854a8f9d3d8a935f5d1b6dbb4fd9ca34dc2324eae1976b6198845b74342d4a",
+      "LICENSE": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
+    },
+    "git_blobs": {
+      "root/etc/config/arpbind": "a98acd8f0689dfe79d4b4d8ec95f126ea896dfa3",
+      "root/etc/hotplug.d/iface/50-arpbind": "36dfc74a3c6f3ff021b25d7d39ed86fc1b7cc644",
+      "root/etc/init.d/arpbind": "df19064c9c8214571f62ace8703415e1b22fe9a4",
+      "root/etc/uci-defaults/luci-arpbind": "a342e8a7cd7a63c49967cc7fb4754f48a5ed2644",
+      "root/usr/share/luci/menu.d/luci-app-arpbind.json": "d0470be312ca942cc9389cb6e3d6c6f1aba181d8",
+      "root/usr/share/rpcd/acl.d/luci-app-arpbind.json": "e3f5ff248617e03848acb993a4da9ef29fefa9f9",
+      "htdocs/luci-static/resources/view/arpbind.js": "d9c26237103ff6bdb94f7c2ed161e1aa9ebac4ba",
+      "po/templates/arpbind.pot": "edf0fd1b6de6390607768991109f35c5e9078347",
+      "po/zh_Hans/arpbind.po": "53342594b61814e25c918cd3b2659703808ba2e2",
+      "Makefile": "d8a42d90f995989fe5d0a1a8d0161dd3fd3da9d3"
+    },
+    "inner_archive": "luci-app-arpbind.tar.xz",
+    "container_sha256": "29fa935cb09216f0aba44f9131a2f5fe3d482d0eb53c3136d430eccc799c9716"
+  },
+  "modemdata": {
+    "archive": "vendor/luci-apps.tar.xz",
+    "sha256": "29fa935cb09216f0aba44f9131a2f5fe3d482d0eb53c3136d430eccc799c9716",
+    "ui_repository": "https://github.com/4IceG/luci-app-modemdata",
+    "ui_commit": "862d7385346813bb0a862611f3ebd26659b09dfd",
+    "backend_repository": "https://github.com/obsy/modemdata",
+    "backend_commit": "fbdc0b6a720647642e99c6fc8db933a767c9ead0",
+    "ui_version": "1.0.32-20260709",
+    "backend_version": "20261017-1",
+    "files": {
+      "backend/README.md": {
+        "sha256": "aa98548e29d38587eeaf4502eba1a5718b807fc64b607de06633526e11953872",
+        "git_blob": "dfe4673297875b6a10c50bb8bb512c9132960cb9",
+        "mode": "100644"
+      },
+      "backend/modemdata/Makefile": {
+        "sha256": "4121d38e5633896c47bd13cd886c18b35aae4c1ea06df6f60fc26986090f5604",
+        "git_blob": "3b1343cea11e0e24fcae7b55509f6f35efa253d4",
+        "mode": "100644"
+      },
+      "backend/modemdata/doc/README.txt": {
+        "sha256": "a18ecdf1a957e9dcc0655fa1811b1b470594b1e66c1c238720d01c0eeaa7242a",
+        "git_blob": "e854bd7f976e89478abce2a093fbf2ec6dde7595",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/ecm/huawei.sh": {
+        "sha256": "18107fe2734146c7c3f5b0427b0c2424acf2ddb8d6ed5fde1c728f15cf0a9d90",
+        "git_blob": "38b6f5d860486e41fcf68173f56fd87a73bcc320",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/pci/105be0b0": {
+        "sha256": "f9c660db13154f00098f79b7f26092fecbd20fb0b49edea2b68c8e42d710cb3e",
+        "git_blob": "fcf37b2573c964b32f71cd01ebff89dfe523480c",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/pci/17cb0306": {
+        "sha256": "2e4b336a638202162223757b1e45cdd6fdbcb9cdd74b7f9988d365fd66f49fd8",
+        "git_blob": "9eb23bb8abc395b44873ad450038cf06d0f0a614",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/pci/17cb0308": {
+        "sha256": "2e4b336a638202162223757b1e45cdd6fdbcb9cdd74b7f9988d365fd66f49fd8",
+        "git_blob": "9eb23bb8abc395b44873ad450038cf06d0f0a614",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/pci/17cb5201": {
+        "sha256": "2e4b336a638202162223757b1e45cdd6fdbcb9cdd74b7f9988d365fd66f49fd8",
+        "git_blob": "9eb23bb8abc395b44873ad450038cf06d0f0a614",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/pci/1eac1004": {
+        "sha256": "2e4b336a638202162223757b1e45cdd6fdbcb9cdd74b7f9988d365fd66f49fd8",
+        "git_blob": "9eb23bb8abc395b44873ad450038cf06d0f0a614",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/03f0581d": {
+        "sha256": "cbd1ae3297de28ba750a6d5178e35c2e63552ecf57e70d7de0fb53754328101d",
+        "git_blob": "ee8c57d6566bcee3e0c501620851cd618cece0a8",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/03f0a31d": {
+        "sha256": "cbd1ae3297de28ba750a6d5178e35c2e63552ecf57e70d7de0fb53754328101d",
+        "git_blob": "ee8c57d6566bcee3e0c501620851cd618cece0a8",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/05c69025": {
+        "sha256": "19946bca0f2ea65b8fb543204130c7e10d73153820a3dc862187c684f19a7fc2",
+        "git_blob": "c80ea70e3c0603e9f3ceecc4b7b0b15e598cdc12",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/05c69026": {
+        "sha256": "2acf74211d33e349ca478d94145511368b3eb9e7667ec24faa6c847e91829533",
+        "git_blob": "f12eddd51b517b9788943662e3d57805aeded6ae",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/05c690d5": {
+        "sha256": "19946bca0f2ea65b8fb543204130c7e10d73153820a3dc862187c684f19a7fc2",
+        "git_blob": "c80ea70e3c0603e9f3ceecc4b7b0b15e598cdc12",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/05c69215": {
+        "sha256": "58245d8795ef3b398c09ed9d26c53ce2c7f508f033c7d41dc903ac22134894a3",
+        "git_blob": "2c5eb00df75306eaf8e077aa13981de6110d3803",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/05c69625": {
+        "sha256": "d2dc80b4a5be9c09eb5c52a10b191e077a7a4464b28db904b5bd3c13b90d9ee4",
+        "git_blob": "c68b35626c06af6414eae56b9cdb0fb6fb25a4a2",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/05c6f601": {
+        "sha256": "55ee2c4efbb060fc93c65a04b7d9cad1e8633a7bf2bfea859385eb1ba80100ac",
+        "git_blob": "8df77078e141f59c2d5757caa7e714cb73ace762",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/0e8d7126": {
+        "sha256": "2e750b2dcc76a61d382451edcec3377cf1cd672cf52cd39bfe6aabc9a4522908",
+        "git_blob": "58d0bfe9e5656d3888c4e953da1580adee8f8fd4",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/0e8d7127": {
+        "sha256": "a745f945f9f4e8b372e8150d82241e0bb0044e804557d2032ee8365890c7fd58",
+        "git_blob": "fff6a5f058364a8be7f85e59785ade76aba21ad9",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/119968a2": {
+        "sha256": "9b760c59644ad865398c7801681d5ad55c9c4f96284cdfdc4d4f128ddc9b2b37",
+        "git_blob": "02e6bd75f6e4d3302a146664e760245af2af9869",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/11999071": {
+        "sha256": "fa3430e655d01353ee714b581dc52d0e0235d72e963aaf65ec264e4b58c3bfe1",
+        "git_blob": "ee1067deccdbfbecb7064103aa7220fea086ce1f",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/11999091": {
+        "sha256": "f9fbed3f5adbeb8b6620a6f6cbbe407d654ba591abe3aec6c841355712925b15",
+        "git_blob": "fd593cfb3af6e98149e35624a4464682d8ade260",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/119990d3": {
+        "sha256": "d8d8332850f86d1e216e8bab0ae81839f80d43e2b3f8140e1d40e5a1dcb817e7",
+        "git_blob": "040b28f567ed8bf7e4ba530825837212ff85a2ac",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/12d11506": {
+        "sha256": "5d07888e5e011caca06a534e4a722dad28a7b4b5c2d11375552eacf762e6dd5b",
+        "git_blob": "b64804069d10d4bd172d8ddba9dc56ba9f54294e",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/12d1155e": {
+        "sha256": "cbd1ae3297de28ba750a6d5178e35c2e63552ecf57e70d7de0fb53754328101d",
+        "git_blob": "ee8c57d6566bcee3e0c501620851cd618cece0a8",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/12d1156c": {
+        "sha256": "cbd1ae3297de28ba750a6d5178e35c2e63552ecf57e70d7de0fb53754328101d",
+        "git_blob": "ee8c57d6566bcee3e0c501620851cd618cece0a8",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/12d115c1": {
+        "sha256": "cbd1ae3297de28ba750a6d5178e35c2e63552ecf57e70d7de0fb53754328101d",
+        "git_blob": "ee8c57d6566bcee3e0c501620851cd618cece0a8",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1435d181": {
+        "sha256": "9e693f84ad7ebe932dbcdf4886baf151d9946cfb5cabf346f34626a50dddcf7a",
+        "git_blob": "4d8411425abb1d4716e13301b1084f9c3f302a26",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1435d191": {
+        "sha256": "8af736575d1bc474142af84d92f7c7e2f2e399e3b0ce5598a5df3953de9c89ea",
+        "git_blob": "62b57731d1941a60f48d6f5fdf74a4d454a4383b",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/16907588": {
+        "sha256": "679770dcd29ee9929942392a02df05b5661cd709c9474bc06beabd109693f1b8",
+        "git_blob": "a2a3260ffb1d78e806ec2b57e51e8a9753932392",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d20167": {
+        "sha256": "aed91bec8b43e98d11f7cb399baa1c46843831b758ed1baa2d38ccc6aaeb6100",
+        "git_blob": "4c5403149c81298fcadf6e006db23dc56260f1e2",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d20189": {
+        "sha256": "c28e9d67b60f3d4486e04a5fe740977cd1879ca9dd85f1d81d7df0fed7b21066",
+        "git_blob": "d0facc5ad9463a29b2aa0cc59f346875cb892733",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d21275": {
+        "sha256": "7d40563c3963331d5feb24be5a1bacf02d9714edf0512038d3490cc949c2a352",
+        "git_blob": "f8a964f39085b6c7f28f3fc8ce893f041d69107d",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d21432": {
+        "sha256": "6ce192f9196418e89839eb85daad95cf2aec7eeea57378507d490d4bc41afed5",
+        "git_blob": "b67e2c000678710aaefa611741a723865926014c",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d21432.new": {
+        "sha256": "7f7b158872b8102976327566f97c4ab9790e723c5c55e323a53df5bf9b6ad0cb",
+        "git_blob": "bcbeaf832fb68f6e3b5a9446727a12d30c7a9554",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d21485": {
+        "sha256": "9f428c9297bed1751c5c3c02f342a1698d168227aff1ee224b6bac44cbc6575e",
+        "git_blob": "7b96abd8b5a73006b8bd12e54ecc6b609d9f6be9",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/19d21489": {
+        "sha256": "24b0ba7ed69f6594eaac2e361ac280d368a434bf412500c83370821f37bf4d25",
+        "git_blob": "03eb1f2ee02fc4b341d3b5c47488686c1f66dbf3",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1bbb0196": {
+        "sha256": "0cfcf1fde3a8783c918a071537e183c1609f9eb85b8c811dd0eb21582a7c4e9e",
+        "git_blob": "b07b80449e84ecd560b4cf310514593dd2430823",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1bc71040": {
+        "sha256": "da1d05528ca5f4689f7a363ed3ae6a8ad401422da5aa5047a040bcbff04089b1",
+        "git_blob": "e506e0a93a98576d9c138a00a8940a8eaf1931f3",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1bc71201": {
+        "sha256": "47467efccd36bf203ce3b3865245436d2202920d62b19f0ccff2a367bce71b92",
+        "git_blob": "472ed0b481e41fb31aec2f96ccdc5dbc46ad8986",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1e0e9000": {
+        "sha256": "972a2b7bed35669e2b482ee88647aeb0c5a75673c8e3db07d02a198d09eff862",
+        "git_blob": "e4c9dd9f71dc7f3da7a8afd5bd0e8004c41119a3",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1e0e9001": {
+        "sha256": "94bef3c7b3dac1e6c1db4b7820fc7fb83f8771c327dc80de4104512cf7d147c6",
+        "git_blob": "8eb23c6532a3e0ef58ad33cbadc5f97993106427",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1e0e9003": {
+        "sha256": "94bef3c7b3dac1e6c1db4b7820fc7fb83f8771c327dc80de4104512cf7d147c6",
+        "git_blob": "8eb23c6532a3e0ef58ad33cbadc5f97993106427",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1e2d00b3": {
+        "sha256": "a8f115fec05066ce203ce9d76dd3c71b547a7b48e646dacbdf9208fad9aab51e",
+        "git_blob": "812d12c9c565421c4e71d65730d280e8b8a20ec0",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/1e2d00b7": {
+        "sha256": "19946bca0f2ea65b8fb543204130c7e10d73153820a3dc862187c684f19a7fc2",
+        "git_blob": "c80ea70e3c0603e9f3ceecc4b7b0b15e598cdc12",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/20202033": {
+        "sha256": "7619c2a64c8126b00354a4656b72efa1bad31e1267804aab9284f1a56472b470",
+        "git_blob": "c400a6fe378987f9438afa394afd4cd0889dd82b",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0122": {
+        "sha256": "aa128776140d9f66e25403b158bc23fcb3a09f5360316febd5db528a4e99fd73",
+        "git_blob": "52cd993dbccf44b525b4b5a8ccab25c0e721f276",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0125": {
+        "sha256": "48fe544ff255059d776e429295e789ea584bfef16dcb2d56f0bf8271ac3bbbc3",
+        "git_blob": "68b1c79d93db9118bdca4b7adcded54e4b5278d3",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0133": {
+        "sha256": "aa128776140d9f66e25403b158bc23fcb3a09f5360316febd5db528a4e99fd73",
+        "git_blob": "52cd993dbccf44b525b4b5a8ccab25c0e721f276",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0306": {
+        "sha256": "53b4a336c19406d2cac7b7fe2878b2765a36ebad662b2d7ecd48d055c3b06651",
+        "git_blob": "fe39480f14150fc48048eb1cfe10d675743892a2",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c030b": {
+        "sha256": "76a34fc57983fcfdc952100496f30b03fafd112f0be431ef5c3b0c876154cdca",
+        "git_blob": "444b54e93b1cc58f46bf0f60a2352e960ab8c583",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0512": {
+        "sha256": "c43aa68d57acaed6c6494b06973e05fb5414219aed7fc0e935357b1feb0fa5ec",
+        "git_blob": "3ecb34c7f22f0505b8374ba7c0d6b6dffc3bea7e",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0620": {
+        "sha256": "47e44199952bb2e337bdc225021f48093c09388e71d1e99907dd52732dc90734",
+        "git_blob": "abe7fa97a20c275ecc76427980968e48e9bc2ecc",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0800": {
+        "sha256": "6194c84ea7762c586adf8c1b47154507c338f5443f4fd41bc01956b591db60ce",
+        "git_blob": "ddeefa286cf70c04e5f6659e225fc95782a2d13c",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0801": {
+        "sha256": "aa128776140d9f66e25403b158bc23fcb3a09f5360316febd5db528a4e99fd73",
+        "git_blob": "52cd993dbccf44b525b4b5a8ccab25c0e721f276",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c0900": {
+        "sha256": "aa128776140d9f66e25403b158bc23fcb3a09f5360316febd5db528a4e99fd73",
+        "git_blob": "52cd993dbccf44b525b4b5a8ccab25c0e721f276",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c6005": {
+        "sha256": "a024fb0e64daf08ca28f8c1d62f6baf46d3807aaff35f02555c1e2a1d3dc7a57",
+        "git_blob": "8216f5aeb4770687090226ba5c1020b56cf261fe",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2c7c6026": {
+        "sha256": "6e78a63d0078f2216922cd95bb4c1700d6cac168344062110bfe62092c32d8d2",
+        "git_blob": "74899c8c2f7e0ea1033a0d567f2382a695a9c99e",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cb70007": {
+        "sha256": "c420a814e631573f17af94b52fd4be85903793636d04454c29b11e8b271607dd",
+        "git_blob": "c9b27217d02c11aa2a6425944324e21543f37bef",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cb70104": {
+        "sha256": "7fd1d978f625552154f6de1ef92761596a2aaa4f4cc8625b90e0c656f0f17682",
+        "git_blob": "5b6e1b394a42958605844bfc7ce6d32b1ed44d6e",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cb70104.fm150": {
+        "sha256": "0fec3a7b1cd18ce8532f481750a5f43e4c268e3f5b56c78784276a17c32ac7de",
+        "git_blob": "66f9814cd79002f6d7c6fb325a2e5d5878161b13",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cb70104.fm190": {
+        "sha256": "f436ad800ff6e906ad07eeb38a7f2190d3c4ec93c4f26c3fcf6f971c796c5a39",
+        "git_blob": "8877640fa3f246f9a4ce58b300e8f8dfa22eb0cd",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cb70a05": {
+        "sha256": "de36b0b68334543619853d0b7a8dfc4fd99e12f3eff9b8348379f4f8714ae5db",
+        "git_blob": "8b2048a859d1bf43f5cde5b32f09da4e8f6f7439",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cd20001": {
+        "sha256": "72277c3bffc060e0f5cd8eb0e1f2568ae2f9b10e3741889b3779f33846ba9e1b",
+        "git_blob": "05bf8d52e0247f24387c738af1a33182c3a7be24",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/2cd20004": {
+        "sha256": "f8cd1d9b638e758550dbdcf6ce941391fa1a7d805ffacf589afde5192b1c50a4",
+        "git_blob": "949af4d890dce3bdb91763e05498c66fe38f44c7",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/413c81b1": {
+        "sha256": "36b2e5e08bad3a015c396a05cde26c479361ebe032e0c4c619ec509b589368c1",
+        "git_blob": "432fdf190d32866f8deba6ca3036709fc8dd0ba6",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/413c81b6": {
+        "sha256": "36b2e5e08bad3a015c396a05cde26c479361ebe032e0c4c619ec509b589368c1",
+        "git_blob": "432fdf190d32866f8deba6ca3036709fc8dd0ba6",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/413c81d7": {
+        "sha256": "e6b77a6bc094d47112c8b8ae3d6b7a340f8339acac99823c679571e2f67d933b",
+        "git_blob": "002feb04ddba05ca65eafdabad068ea86d41c855",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/413c81d9": {
+        "sha256": "a8e73f408cfea174f45b340c3ee4883c08685a30b7fcf468784f3d8fb4d8df32",
+        "git_blob": "1dabdc6419f2436f547413f86fba8f0446ec407f",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/413c81e4": {
+        "sha256": "f7dfbdc344563d560de684ec6d996bff2cec3f7ab8f1363388c2f31e7c8ed26e",
+        "git_blob": "c0343391580f6731a5c70c8917d82fcbf5ddab00",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/addon/usb/8087095a": {
+        "sha256": "4e6a3326a413a78f9f3f050647885ea17f07a3104cb941c001d463a3a6d32986",
+        "git_blob": "b92f6a95bd72dbe37e905fdf248a82ef3ca3a958",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/libs/getdevicevendorproduct": {
+        "sha256": "d76afd0de5593651695b5f060d98895733edabd0490a69ed7a866955fdd6d0b6",
+        "git_blob": "e196d39ccaa60ba99a10e0527375a7d859a3e706",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/libs/mccmnc.dat": {
+        "sha256": "0d76cca48b66dc07fa132a55abd35e2dabf60d28e88d8ce7aebb9cce1a6e43b4",
+        "git_blob": "b15d2fbeb22e1a3dbee04c7462c2520cf60fe487",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/network.sh": {
+        "sha256": "4ba0d823f83b0576f53da5c798fc8c04a26abdecce6d412052afce0a8d977b40",
+        "git_blob": "ca1dedf6c4b9c4dfa66fc7ca0ea1c4df0ac443a5",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/params.sh": {
+        "sha256": "30b298ed8df958cda87f12076bfeeaf870491d25f6adcbcf6d6cab6b25821688",
+        "git_blob": "0f28524b7c66cc1a79cfcb01482128c8f98473ac",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/params_modemmanager.sh": {
+        "sha256": "17255f8b6bc42556ab520eba983ffdc8e11a83b70f203c6321eaf1bdebd88648",
+        "git_blob": "6d9e1127b46536554b4390fd1d1afce3170a359b",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/params_qmi.sh": {
+        "sha256": "47080bf874c991864afddbfe7f559bd4d33bc3e8849c17bb8270874bfb4cb7d9",
+        "git_blob": "681676777163d8b78869240b2347a491788e7dab",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/product.sh": {
+        "sha256": "677a3384d1b3eeb2d8b117faeb55a0386ed8861b9415d80d3b4aa7b0697618a2",
+        "git_blob": "b3ad476d1139125a8a25d5bf935bad9d555e62dc",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/product_modemmanager.sh": {
+        "sha256": "8888091378ccb23cb26dd287c91465a3236a8aa8115ff818516c94e11934c233",
+        "git_blob": "172cb9087ffbb4de0d174e7d8f5d005bd9af4c0b",
+        "mode": "100755"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/generic": {
+        "sha256": "4fd9982fb0e5e46cbe22bace9cb66a1b7cd38ba34ccb58064d969012433ace3e",
+        "git_blob": "01be71a36d924f6eeabc597ef650c60c9ba31cf9",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/05c69025": {
+        "sha256": "c1529951a62c2f79ca2c3bc7b5ea5fc593c8ea2562649e53d57fba83235e5cf6",
+        "git_blob": "db8dab0c5ee6d9f300e74b0196fe637ac44192e8",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/05c69091": {
+        "sha256": "2347de4b54112831b1505dc3bf6cfa475b4ccd309cce84a1720050e8cf73828c",
+        "git_blob": "a1f401af248b8a9d7c2e5eaf4dbaab9a11d29368",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/1bbb0196": {
+        "sha256": "aecd4f6e97cf7c20e39e247323f67271215fd851bf31e67293af7a81f0020744",
+        "git_blob": "503b1fbca037e63b303b137e9b5e8360082bc7fd",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/2cb70007": {
+        "sha256": "32d948b34c1e73dd62e0eca6a1da060c0068da7f7e61da6a9e1daf44e378c1b5",
+        "git_blob": "9d454e5077de8680a4fa56556c7f6ee94c9c7cad",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/413c81d7": {
+        "sha256": "bdca089aea60d0362884704ec2fa5a975cd6fef91a23fb1ff46281767126a339",
+        "git_blob": "41db0abbea6efcfcddb68486a69d21751edfed42",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/413c81e4": {
+        "sha256": "f7dfbdc344563d560de684ec6d996bff2cec3f7ab8f1363388c2f31e7c8ed26e",
+        "git_blob": "c0343391580f6731a5c70c8917d82fcbf5ddab00",
+        "mode": "120000"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/usb/413c81e6": {
+        "sha256": "d17ef08e482d6ccde4cc9c23c41cbe44df15a015e99d2c4e4bc1573206fb7ecd",
+        "git_blob": "bda6b5c15f8f50b7929606030f8a39170b202802",
+        "mode": "100644"
+      },
+      "backend/modemdata/files/usr/share/modemdata/vendorproduct/vendorproduct.gcom": {
+        "sha256": "145fef5d34e661f936dcf88eff8d234c7142135c9668e02bbea3925e5135ea51",
+        "git_blob": "f51bccfd39f97e73bd102b1a590bea61fd79afe7",
+        "mode": "100644"
+      },
+      "ui/.github/FUNDING.yml": {
+        "sha256": "8571f4cb22cd58d1ffc12036eeb1d71df74b589551b4809b1b096cff192b20dc",
+        "git_blob": "b273ca035ae0b1bf7e35745fe85dd4fb824e5264",
+        "mode": "100644"
+      },
+      "ui/LICENSE": {
+        "sha256": "2832266e0afe6b74163472b94c03fd3487383a81f94071f2a34e699f59f6e1cd",
+        "git_blob": "67028ac34cd8e86167e90ab1b362261a582a6693",
+        "mode": "100644"
+      },
+      "ui/README.md": {
+        "sha256": "b61a29ac2e82e3b113da5e148817018bbc8685adfc3d30313d1e0b89ba594c23",
+        "git_blob": "08a31a016fea03791a2e1f251a9a5bbf047737c9",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/LICENSE": {
+        "sha256": "2832266e0afe6b74163472b94c03fd3487383a81f94071f2a34e699f59f6e1cd",
+        "git_blob": "67028ac34cd8e86167e90ab1b362261a582a6693",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/Makefile": {
+        "sha256": "51f2e9438d96e67e150ae4c8db8f4f62395f7912b226c78d08af4b7d6a442800",
+        "git_blob": "f3723c6fa149314183c4de3efb9409b40d1df0df",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/ctime_new.svg": {
+        "sha256": "b93fb2b39c6b24d4563a0852a00bb5903b2a55d4946a8db83e64f591a04b5e9b",
+        "git_blob": "cb458f696e08226bc01ea8fd08f1657972db1e26",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mobile-signal-000-000.svg": {
+        "sha256": "a3ee874bc10c2aeef2ffa97475425f2e89deda17e5224914cea4955196428fd0",
+        "git_blob": "65244527b4729be1a9f9d5815b1b5ad028ad1abb",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mobile-signal-000-020.svg": {
+        "sha256": "69dc4ee4a55ee6d588309540b0edde3c6424e78051e6cafee832bdb26645a267",
+        "git_blob": "ad97cff9078b04598406f8625760bd4502931181",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mobile-signal-020-040.svg": {
+        "sha256": "d147da98fc014953978342d81607460d1abd2e4f782740e89619d387ae78d1f4",
+        "git_blob": "c4d7d5a71d97b87be9b730ed82afbf9f23645521",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mobile-signal-040-060.svg": {
+        "sha256": "1cc44797770cb0d6a76b85d5af5039621d7881b159c7a106406bc1095ae3233b",
+        "git_blob": "75d805d8a0c15d97c1e1e2e170946d2505060ca5",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mobile-signal-060-080.svg": {
+        "sha256": "bbb146a8bedde74e6137571cf88613e3b8fc8fe1f1b699c73a5178e1bec470dd",
+        "git_blob": "918d07c0670756bc7d4f500fbe59732678b39b8e",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mobile-signal-080-100.svg": {
+        "sha256": "a139afc2aed765f7658d47f8406aeafb0b0f20e609ce9f5cad6e3fd80b9e96ed",
+        "git_blob": "029a04d7f3a0b43a2b15a3ca80d63aaf50844d71",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/mybts.svg": {
+        "sha256": "9d02fc1bfdedef5a4a081a5f958d10f150ddd6bedea66324ed2ae1df30b1a736",
+        "git_blob": "b3a47c235b2697b693713ee098ef3aab41c93f96",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/sim_new.svg": {
+        "sha256": "04e98c5a78e55a4892de52222b40b59536fcacf1f64235017e08f5e9b8635040",
+        "git_blob": "23a92fa90e8026c143f1c555640e76822c209c81",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/icons/termometr.svg": {
+        "sha256": "fdd3ec3e4951618608cc26fe4c511449cfa149598d98adba3852a3c4ac2db3d5",
+        "git_blob": "894a912d6776230302055bd6ef50110a4d993a06",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/view/modem/modemconfig.js": {
+        "sha256": "d10f4ba74ed6a31f7a154b869128ac1cc1d527f6eaf69798924b373699319708",
+        "git_blob": "408fbad94362d98f8f4d0fdaf2ec1aabbb0c900c",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/view/modem/modemdefine.js": {
+        "sha256": "b1faa48cc33b7142e937232278557d098c2c89147a6246a13f0ad1f17ffb09ac",
+        "git_blob": "0e6d0f49312d9ecd0737cf6630027d079670a17d",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/view/modem/modemdiagnostics.js": {
+        "sha256": "4a7ceea5fa9eca3e2facc1754f65805d2cfaa51144157253eb2712b35cd80705",
+        "git_blob": "259973512699adb4d797f266dddb00c7772c049a",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/view/modem/modempreview.js": {
+        "sha256": "459851259a233d29b8acaa90960b4cf6847fe92acff3c1a0ed7c9818cccc95b1",
+        "git_blob": "5322f2e678f96a4537fcd4383ca2b9b530e9913f",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/htdocs/luci-static/resources/view/modem/modemupdate.js": {
+        "sha256": "ef24de41fefaa9565773aa7bcb4e07a0dcf4ae42a5e58318bbfc3ccd70b312ae",
+        "git_blob": "eb2dbc5c9690a824c8fecf9cc7e41baf37bcbbcb",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/cs/luci-app-modemdata.po": {
+        "sha256": "0a30a7bc50f4a66046f3ffbe2dbbbd067233a9f7bcea91bdeb261384102ca822",
+        "git_blob": "f1b5f473391c8b5478261000bd609079c2a4230c",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/da/luci-app-modemdata.po": {
+        "sha256": "d9cf86ff8a7524ce66e20d58d7005f690b083e95137de7a77da10cd6a7fe4856",
+        "git_blob": "df20a7a8e4289ca5f1e519cf8ca204e1a1d7d8be",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/de/luci-app-modemdata.po": {
+        "sha256": "2d1bda90e0e358735c2dbe9164526d084acb361b9a2368ccb240a0cba238de50",
+        "git_blob": "aa3126f458ccebde8f415a2950ded59cdf8188f0",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/es/luci-app-modemdata.po": {
+        "sha256": "0b505ccc96c3834d913ee27b3e8ec3b24d6ecbbb4e159757519ea5d1680b4015",
+        "git_blob": "a8e7513c32d9b2b8f6d187183b91e92da122e393",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/fr/luci-app-modemdata.po": {
+        "sha256": "5902c41a35a39dc99bc48000f84778ff2aa9ca01b526e1767cac092b055d82fb",
+        "git_blob": "45c37d22ec9a344a40c4f5175bf2257bdb3ae833",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/it/luci-app-modemdata.po": {
+        "sha256": "4efc788982065f7f7cb156e90864f0b38895a253fe987c42af0aead91ba57466",
+        "git_blob": "b17bec518eab49856a525adc4b1a4b63269a168d",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/ja/luci-app-modemdata.po": {
+        "sha256": "fe57874c047a17b8bd1e05d9b62b7eb76bfe2ab0bb7cd11929bf5f64a420a0e7",
+        "git_blob": "f208adf735a27afeeb81d7845e539c8cf7bbd421",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/ko/luci-app-modemdata.po": {
+        "sha256": "8b7623c064d32078726f0f8c25341387a8996f238421007e19d0e1fbb7312feb",
+        "git_blob": "447d79b053087a74c90c400069c85985934471b8",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/nl/luci-app-modemdata.po": {
+        "sha256": "7c4a51e54ed7ffa05d23ba8cc1c7fa33a72eb0fca7cfd9579f59393a0409fd67",
+        "git_blob": "bd9c824c4921df017f26f42c003ee28b29cb9093",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/pl/luci-app-modemdata.po": {
+        "sha256": "747d015d223bfebf61bd252c991f4d8f517be76bfe8a62c1aed02b47ae30676d",
+        "git_blob": "d8bb89cb062ad07aec5a8278d9809073b8954bda",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/pt_BR/luci-app-modemdata.po": {
+        "sha256": "055702b6d06731d108bc2c5e562554c6fb53aabd47e8748d4cb3efaa0cdd2481",
+        "git_blob": "60a83ac017077aedf82920ba8ddc65e09f2799da",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/ru/luci-app-modemdata.po": {
+        "sha256": "f228fe80b69863c79343928770eba1548664465a81870dd2a5987401bffc1ebc",
+        "git_blob": "5378307d4c36e826556a6c64374c055ea3386fb8",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/tr/luci-app-modemdata.po": {
+        "sha256": "cf285d94b46f87bf564f11d765884f6c0b5de468886140faba38545b38f64c4b",
+        "git_blob": "0038e22899ec1c55663c400a9eefccf85faff359",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/vi/luci-app-modemdata.po": {
+        "sha256": "0dd42106e47972078baa5a585f781952ce79308aac6d126cca958931e450a9fe",
+        "git_blob": "0227f8ac00ca1d4b7b72d5b1be9bc42d99065b83",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/zh_Hans/modemdata.po": {
+        "sha256": "2d69df99b0cb59245a7c308766e8f6444c3df203e2f6af573237acd8bd5fa44d",
+        "git_blob": "c50b4776698ee562aae25891b433b85280e77318",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/po/zh_Hant/modemdata.po": {
+        "sha256": "a06ed0ad446f7d56b9f5aa5acafb421789693de9e84e20ce653747af43d78cb0",
+        "git_blob": "9a15e51c45805dbb9aeed80a82feb44752ebb0b9",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/etc/config/defmodems": {
+        "sha256": "e0722291d5651f25b727d159846253ce39b65bb40e59b3a83f5a7a2c1678327e",
+        "git_blob": "cc909ad713b245e55c93ed58ca43729ab12e3dc9",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/etc/config/modemdata": {
+        "sha256": "9260f5ec5a81f5ff398fd6903576827cd4135b67df2031922a6f053a4f9bbdd9",
+        "git_blob": "385a279416442f1bf0585cf537fe3d5fb229c15d",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/etc/modem/modemlist.json": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/etc/uci-defaults/setup_modemdata.sh": {
+        "sha256": "afd3d9f3a79249e8cf671ba6913bd7c33fc51485f71c54ea81f0ba309dbdc929",
+        "git_blob": "71ac1cb5e96340181c331bf3e9dc65a842824cb6",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/usr/bin/md_modemmanager": {
+        "sha256": "1fa1336b4ec6e00627011a998bacfd6bc95320e83171488c939b1c5c3f758275",
+        "git_blob": "0d7626aae8564cb035dd559e320d5e950a462ef1",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/usr/bin/md_serial_ecm": {
+        "sha256": "c69934e885507a4de4ad2374157317ecb2efe66eac0f587ed8f9cefe28aa81c3",
+        "git_blob": "aabc4d7aa40e196e0ff6842396d06b84024c9ad0",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/usr/bin/md_uqmi": {
+        "sha256": "8372f509bf03fd52a78cf4cbf2bb46cfdbdfdae5d37b9f1b0def2fe98d06ba49",
+        "git_blob": "f3a8c2da6d3022a860c1ea0118405da2373733b9",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/usr/share/luci/menu.d/luci-app-modemdata.json": {
+        "sha256": "65512e2fe76879438093a827cb1c087e1a6ae2169373a4a6987694b2a1c57206",
+        "git_blob": "d20ff0f05360f73f1e8daf6ecae222ce8e5f1438",
+        "mode": "100644"
+      },
+      "ui/luci-app-modemdata/root/usr/share/rpcd/acl.d/luci-app-modemdata.json": {
+        "sha256": "020ead17d28f0b535d9fb713ba161a04ee1e7756c2f0c3e368a7eb4ebae5a4eb",
+        "git_blob": "2546ee6e28b0082e10fc82f1ae1e3817a8068103",
+        "mode": "100644"
+      }
+    }
+  },
+  "phone_libraries": {
+    "archive": "vendor/phone-libs.tar.xz",
+    "libubox_commit": "75a3b870cace1171faf57bd55e5a9a2f1564f757",
+    "ubus_commit": "f787c97b34894a38b15599886cacbca01271684f",
+    "files": {
+      "libubox/.gitignore": "6b7482d219cc41619bbefeccdd1f66499aa00db9a6b286ae3f5789f31c61bc12",
+      "libubox/.gitlab-ci.yml": "e1e7b682c835489b12b1f2d0c41963735807809207320c2b7c24c7dcf58999b5",
+      "libubox/CMakeLists.txt": "809ed921bf8f4e7a05eda577389064e0a3dc67313790165eb5d7365f2096fcf0",
+      "libubox/assert.h": "c2c265083900f333af16c7ff59793907723ecb933a18c45e1047088432aedc09",
+      "libubox/avl-cmp.c": "0c5eea59202178a304cedec55bb365c6d62af573ab40aa852c6e0369692a600b",
+      "libubox/avl-cmp.h": "0701f4520376445975cefde699442d3747a63399cf6373f44c31dcc32a133651",
+      "libubox/avl.c": "9a71bb61d1c686d73bff7318c2df8b0213a5bac64d4ad4555bfb14a66e6baa17",
+      "libubox/avl.h": "f0ebf6b2c8731fa8340a6d92380390ae8ff348eb71ae4ee5c46e3b166d99dae1",
+      "libubox/base64.c": "3378f8210b5bd02d19e9c73caa658b5206e61efef8d2fdedf879b13f5f0ef966",
+      "libubox/blob.c": "c804e7eca5c0a6316b3bc0d8cb402f55089d57896408d2c516a356eb451f8f98",
+      "libubox/blob.h": "cb41bee15e655df145ca399ca4e2a9b47b42c5878317208be372763405262aa9",
+      "libubox/blobmsg.c": "e463d571884be5f340d06e05982cec201d490156a0be36420ee4a04ebaef9712",
+      "libubox/blobmsg.h": "8da487f61c3b6c0ead8a4c71c2d2e6880272a16bdc658fe6be98c809b29eeddb",
+      "libubox/blobmsg_json.c": "7bccc3fb075d5f1b64092b0adac6a17eee454260e955fc099a02f5bfcfd9fed9",
+      "libubox/blobmsg_json.h": "eb2e141a9e64007206c75e9161fb63da27ee72bdd5e90a286495c5ff9496fbd7",
+      "libubox/examples/CMakeLists.txt": "41c511ea03440cef92ecaf58efd25600d12fdb2ebc4eb305aac21513f8481a94",
+      "libubox/examples/json_script-example.c": "6c0ea757de810b381316253aa94b3499ab61af68415b32e91c72b56d0334fc23",
+      "libubox/examples/json_script-example.json": "4fae8b07f6aee0b31bb6b68ee37cbfb2a061acf15ac844ef70bbb612413b89c7",
+      "libubox/examples/json_script-tests.sh": "a5cbd9ceb652d23e2dd21f9bcc99f05e63310dd6755a1f1e7a7b3d1b21e8a8b7",
+      "libubox/examples/shunit2": "5a0d66b4a70973381f34a45f4b0e2f97dcccc2e8bcae32be9130adfb2556d95d",
+      "libubox/examples/uloop-example.lua": "b783be67772a763a5230aeee87e552114d714fb18fa3e8efb8648383579e5243",
+      "libubox/examples/uloop_pid_test.sh": "a4d92dc79a620b899e196b35e321c07d564019ce544a18a11c72a85c8d487bc7",
+      "libubox/examples/ustream-example.c": "cf6f113cea8f7bb240caf69bf94cd4aa1a60d22ffaa9f729cfb95cbc5b23328e",
+      "libubox/jshn.c": "20f9676e277dceb89232c05593d68e7fd4f85323e1fbda8f4d2a5f26caad119a",
+      "libubox/json_script.c": "4a2a66dbc877585218a4434ad5a68669bc820f31126177289a6f1d64ad750e39",
+      "libubox/json_script.h": "de72da2493bc660ac046f8b03d2fc6de4253a2fb15045eadc73edd872a564ee8",
+      "libubox/kvlist.c": "41b5cb7845d2bc3555610b14a838cbd46d9a7262577c5775cb724a2f75cd3541",
+      "libubox/kvlist.h": "da1ed50121e6d841105fc9cacfa3e425254b97d404aaa2a1cd00de40079e8ef6",
+      "libubox/list.h": "8ca757c8053da9da5c68fe8ba27918da9544030152ad065023c328c1f48d677b",
+      "libubox/lua/CMakeLists.txt": "05dc5a6ddeaa6b320ca172686a8f65d799872e35e4ff27a4ba63035f95b71245",
+      "libubox/lua/uloop.c": "c9c1b7853dcdcae6ca39322a9e36bca7f74893f138b63b48295eac0d26696d14",
+      "libubox/md5.c": "499726332de7041207e5a23d571611495c32babce102418e7d13d63a8ab3227b",
+      "libubox/md5.h": "73415778d804af47962b6757579ef286a7d6ad3ac622e24363932cf803953457",
+      "libubox/runqueue.c": "84a2e9b080e7004e198ab6f2d0d60a85150223485d865369dae7b754d3920dec",
+      "libubox/runqueue.h": "a13a540d05b24f61974cd540d941eaf794a43fb2d7b28b14d59360fc5e473eb0",
+      "libubox/safe_list.c": "2866d1b1e0f17f753dd06fc9a31e78fa23fd4154d9028386dd974f90111476c5",
+      "libubox/safe_list.h": "f05dca08740153b8510c8cbbe1b2a783174f2579c62c61d466f6c2c2556edaa0",
+      "libubox/sh/jshn.sh": "d392055502cf3bf74d4a733b454ca0beff9374e167732a0b831df96413beafb8",
+      "libubox/tests/CMakeLists.txt": "7dff9e4e8eb8bf9aa292a933f755d2ebce6ac1d42a913dac89a5c245d703bbec",
+      "libubox/tests/cram/CMakeLists.txt": "a7d0da204f0b76cc0e52be0ec08b72c548f56b9d9aea0f606199730c56b95674",
+      "libubox/tests/cram/inputs/invalid.ucert": "87b7780dfe7b1353f65cc198cafa603761adea8390e95f45b6cc54e7ae224548",
+      "libubox/tests/cram/inputs/json-script.json": "4fae8b07f6aee0b31bb6b68ee37cbfb2a061acf15ac844ef70bbb612413b89c7",
+      "libubox/tests/cram/inputs/key-build.ucert": "2b75c5e91d503138a10894d54756a59062d7f956cd292d3567890f8655b2249e",
+      "libubox/tests/cram/inputs/procd-instance-nlbwmon.bin": "14c04b7be9aa10e18bcdc8cf6cba393b6f95787a3af49f45bab3df334ae13fd9",
+      "libubox/tests/cram/inputs/signature.ucert": "b22aee6f07ffd2f76fc854f55c7950d39ed5f9fb1301c0cb20e4600aa22be2a3",
+      "libubox/tests/cram/test_avl.t": "6dfc56a1012de854d377d4c27113a8e2d09a6d72dea0559163c55db3fd55d748",
+      "libubox/tests/cram/test_base64.t": "1d933d6c7d4921151cd1c221a59332caa145ff477c3eb346053e4c1a4d147dce",
+      "libubox/tests/cram/test_blob_buflen.t": "456245f8c3c91f39eef397ed67f1ef5afc4f51b5a0d3986a77b51d7fc1f13d6d",
+      "libubox/tests/cram/test_blob_parse.t": "74a90387cb1e3c49daa9e627a6791d1eb48b16552c3c6f6d0de503cb98d2f464",
+      "libubox/tests/cram/test_blobmsg.t": "e6b0d73e53d38f5014e18775ae71175f13a16f8a42a234b388e91c69378f8242",
+      "libubox/tests/cram/test_blobmsg_check_array.t": "94ade6fef44420cddfdf3a365022ab5bf8ee1e28c5bdca1ae2b39559466a365b",
+      "libubox/tests/cram/test_blobmsg_parse.t": "df4fe4da7418d57d6d46b0edd73bd49945f23ec30b409bcfccd80af92a521ed6",
+      "libubox/tests/cram/test_blobmsg_procd_instance.t": "90de0c26028540ba33187c6a9c4951e15eb720a2f5c93d379e3135b8746404d9",
+      "libubox/tests/cram/test_blobmsg_types.t": "6b5f99a83902139a48fa01623e73e36f56994c205ec0caa7eccd2c42314bfd9a",
+      "libubox/tests/cram/test_jshn.t": "5548dfe980f276221f5a32c8f4d405c5e907ab20e14fa5c9a4fae7d3be5cb622",
+      "libubox/tests/cram/test_json_script.t": "9e9b5bd0359e8744d7bfca26395cee67dbaf006948010c1b7e807deb9dbcd5a8",
+      "libubox/tests/cram/test_list.t": "92d1b3d74bda30d9a5c59bbc81c156ec49ce8e17e3ee484922921b8774634836",
+      "libubox/tests/cram/test_runqueue.t": "2079f4666e4b25dec6e248226db98cfb7111a1782b98ec32d41dabcffc46401f",
+      "libubox/tests/fuzz/CMakeLists.txt": "81200be08b14a4f82b1f9e16b939c408f21b660e66bb805b04951497523b0e55",
+      "libubox/tests/fuzz/corpus/71520a5c4b5ca73903216857abbad54a8002d44a": "6c453dcd445f88633f051aacd031bb1aba915475890b5d2e2d3db2a16be42b40",
+      "libubox/tests/fuzz/corpus/c1dfd96eea8cc2b62785275bca38ac261256e278": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+      "libubox/tests/fuzz/corpus/c42ac1c46f1d4e211c735cc7dfad4ff8391110e9": "85f90dfea1d8027e1463e5ca971a250110a20df0119d204a74220bc63516d15b",
+      "libubox/tests/fuzz/corpus/crash-1b8fb1be45db3aff7699100f497fb74138f3df4f": "12d3f6e49bc86d78b0fd91f0425d7a1a33f3bdfa0b554ea34fd9f599880dc5d9",
+      "libubox/tests/fuzz/corpus/crash-333757b203a44751d3535f24b05f467183a96d09": "3c4db7fdaf9dc28b7bdde77c4defce2e16ec1f108b7de17a73b326f1519b7323",
+      "libubox/tests/fuzz/corpus/crash-4c4d2c3c9ade5da9347534e290305c3b9760f627": "092d87f08792e61256d7816af7f2185959732f634c0e01a370a924eac58ac108",
+      "libubox/tests/fuzz/corpus/crash-5e9937b197c88bf4e7b7ee2612456cad4cb83f5b": "8d21947a37245440307bb6e2fc88d31c2a59ef24d55c0c9ca28ba433a5c8bc7d",
+      "libubox/tests/fuzz/corpus/crash-75b146c4e6fac64d3e62236b27c64b50657bab2a": "d454b0a90b8a4aec611956def7e56cf9d123833951596007ff2a382102f2f862",
+      "libubox/tests/fuzz/corpus/crash-813f3e68661da09c26d4a87dbb9d5099e92be50f": "b1d3c67c98ac59d2853df45a2b135212e583a59f7d89bd48b229bc4eb2dcb15e",
+      "libubox/tests/fuzz/corpus/crash-98595faa58ba01d85ba4fd0b109cd3d490b45795": "4ac5ea20a278a8720d3457dcf41d2a7ef5fc32a4db548e5cdd02f10b4b3c6282",
+      "libubox/tests/fuzz/corpus/crash-a3585b70f1c7ffbdec10f6dadc964336118485c4": "b6db583453f7c1547ae2cc692fe633d60e651c5b5f12d9b3a82d9eb82347d8c3",
+      "libubox/tests/fuzz/corpus/crash-b3585b70f1c7ffbdec10f6dadc964336118485c4": "480e23d0a4e2b8c13b003b84096378fe7e7c9d2e497cbc0efa47bbf148ba2c5c",
+      "libubox/tests/fuzz/corpus/crash-d0f3aa7d60a094b021f635d4edb7807c055a4ea1": "b653003802b83f27c8650a57e6f011574ddca191348b3e98d7555ff35bcdb7fa",
+      "libubox/tests/fuzz/corpus/crash-df9d1243057b27bbad6211e5a23d1cb699028aa2": "723deae7203b2c8fa6aa74e510d7612c1191df357f5627902707628b6031f7bd",
+      "libubox/tests/fuzz/corpus/crash-e0f8ecc694d96a09a1fced27b2a0838b670d34a0": "cf86662e46cd69be4db74ccad79a9ffe0a60725c1a92039139fd2875cc5ee67c",
+      "libubox/tests/fuzz/corpus/crash-e2fd5ecb3b37926743256f1083f47a07c39e10c2": "c303ac685423299bded71dbe02ad4f1c89fcb6b24eecb52efb9646210e8bff3b",
+      "libubox/tests/fuzz/corpus/valid-blobmsg.bin": "fa54dca070c3afb6d416db96a349b9fd43efd5b5363d93732d9c3be1fbd4f076",
+      "libubox/tests/fuzz/test-fuzz.c": "06fbb5fb1209d791924ff0a7f9e9b1a79670125b2492633ca58abc5ce884a52d",
+      "libubox/tests/shunit2/CMakeLists.txt": "14e9a4c60a5929f66fba96c4e033996b1c822a3a8b9a1ea8a2b40764a9c64a68",
+      "libubox/tests/shunit2/shunit2/shunit2": "0afa81ee8862559929b578fb5fe4365f180d3acdc7eb5e489bf234d2f35597c3",
+      "libubox/tests/shunit2/tests.sh": "2bd286d3b435b0b5e196fccdd3971276c45f5e4d67b7a2a899057c663018a4d9",
+      "libubox/tests/test-avl.c": "79714c14fdba523d5286c3fd5fe12e9d475fceb3d630e141c34e0e6c0956e981",
+      "libubox/tests/test-b64.c": "f1179cc07b988a1c8d8758352686650d6faa79ea80c2fc91c0fa1a92fc40b9fb",
+      "libubox/tests/test-b64_decode.c": "328162674acb8640e2c3bb2035536af02bda3d95c7df3935bb276b97fa6b8f37",
+      "libubox/tests/test-b64_encode.c": "80073da06ebce9d78ba2fddb7d23692878af73344545db0957f35233730ae922",
+      "libubox/tests/test-blob-buflen.c": "ad5aa03fe2b8dfe4c72c4fb9c145d868ee14a5dd2cb876af93aabc207adf5dd8",
+      "libubox/tests/test-blob-parse.c": "f10ed4271f68bd74eea96eefeff0afb391603cfd54210c36e07874ad5c5b0391",
+      "libubox/tests/test-blobmsg-parse.c": "68ae4176cf9f3d249d832830317cdacea25db7a6de433d7412b5edbb173e6014",
+      "libubox/tests/test-blobmsg-procd-instance.c": "c32583373bc1fb121b738753a13b177e38d02d6bd40841315eb1609782ff6c8e",
+      "libubox/tests/test-blobmsg-types.c": "7e654b323e6038804593391b920735e061e9dd432020ef80b0aa9ac8fd0635b6",
+      "libubox/tests/test-blobmsg.c": "8ab05a07d75f9d7a749474c48b650c6aa204ed7d146d32ec06cd94c1a1266430",
+      "libubox/tests/test-blobmsg_check_array.c": "3bfb723ccbf5089b7f652a6c596224c61584e1532ffa69ba204bf63540bed781",
+      "libubox/tests/test-json-script.c": "6c0ea757de810b381316253aa94b3499ab61af68415b32e91c72b56d0334fc23",
+      "libubox/tests/test-list.c": "9053efefd1bb3f8690e28f327c7b161159df4369cb1d75a82009f93b9b51aeaa",
+      "libubox/tests/test-runqueue.c": "0ca1edcb04703e5ac63d2ee6742fd109eea7a507176d953ad370971e7626ebeb",
+      "libubox/ulog.c": "ee9dc2d401a335aacca0e8f91228873ea142cefb79fa613aa5c14050453766a4",
+      "libubox/ulog.h": "df960ddc7c9e30c0dc39f8bc41385bf8927b472844fb046c0e8541bc0455f397",
+      "libubox/uloop-epoll.c": "1a9e0169b18dfe8498d1b619eed6e3d1f379dee74d0024399ba9e6b2eff71fdb",
+      "libubox/uloop-kqueue.c": "ce7c41d2057522448bfd1e42f9c9ad6dae688c87710c95a36a9e25295befeb79",
+      "libubox/uloop.c": "5f065a461d63a7663a5ec2a38694bff67005d2680002cd13db628d9b004ddcdc",
+      "libubox/uloop.h": "ff3ead68ddb5bd4a874ff0e426bc5280c6f389d81ed66db74f6aabd84ab26944",
+      "libubox/usock.c": "2a689e581dde7378feb5f992d584646d36dbc287bd3abb7f4c05279b8bebf15d",
+      "libubox/usock.h": "73e7aad1f2880452fc468eefb5b18e10cb0bc7a4069ff2e9bde1a8793c6bfab3",
+      "libubox/ustream-fd.c": "5cf33817d52e9baa45c657479ff60d9e9d6c49db93fd1d9cfc8c20eb9f0d2f25",
+      "libubox/ustream.c": "b95a76da9ac0cbe6260f60a5d5603f56ce676bb9772294b3127c642834201fb6",
+      "libubox/ustream.h": "18667806cf615b061a02f329d00615d86765aadd72710092dee9fd450c5ea854",
+      "libubox/utils.c": "22447191e1048d165207808a3ec5d882f7e66b39fa109a3a420a74bba76fb726",
+      "libubox/utils.h": "a3c97f1b6d431041816ab6c085d6f44811d6d2bfb1e694c2ba7b501be226a2d8",
+      "libubox/vlist.c": "b7bd128e2c8a673cb1256e02ba321c30fdbf68f2215af93b7435476e8d07f794",
+      "libubox/vlist.h": "063c78977ef5a5d739c5ec3aea5752c083ced1802894265cbc6b98ace6f1b211",
+      "ubus/.gitignore": "0be9574fff003c9ccc975ea42ff868cbd51819a2de36c415640d7fa99d38ef3f",
+      "ubus/.gitlab-ci.yml": "5cebc36099c21c19b15d918668c76c453c47e8a7a0c81a010a27781b38f574f3",
+      "ubus/CMakeLists.txt": "e9b52c2556c3c4481a3522b0ca86ffbd9b1ca73eb5a342431336590ed9be2d69",
+      "ubus/cli.c": "39e281fc8c21fbdd1dbe316ee415320ceed4acdfe8cd58c672da3525f3a39f15",
+      "ubus/examples/CMakeLists.txt": "df90ee9e2334376c3746071d1ee6204c74c37526060a65211fa2356f8ceae915",
+      "ubus/examples/client.c": "6e6cd4a9695006627ce49f277d748aa51acc83294b30fdc604d3dd4317e4c3d6",
+      "ubus/examples/count.c": "b351ff701186b74d2bc247d8b2b7f80c247065aa219a8af13e4af91226443bc3",
+      "ubus/examples/count.h": "35b20d02627427477805d215664732c29a79a8f3065951245796572993b42be4",
+      "ubus/examples/server.c": "b6b5afa6803232a16b9158aad4a3d1786f5703a8586d0689d387035025953717",
+      "ubus/libubus-acl.c": "a0c4e80931d692ba80bfbe287c3175e0fadb443a190b32b7a4068f2ff4d1b909",
+      "ubus/libubus-internal.h": "1173625ab3aa0fcc75b31bc01e505f7fb9820068edd215491bc90d0503bedc90",
+      "ubus/libubus-io.c": "0ada50552a2efe527a6b623a5722a595bf7f12cbd6f68742a64486d14eddc4e9",
+      "ubus/libubus-obj.c": "67b41fd21fa5a0a1de1a658496e5e9f7e6fc0aab855f8da47913ac70683bc480",
+      "ubus/libubus-req.c": "7286a3b79718271f1e7dbf2f448489f000c2d3b729b490cf87071a1230b7acd5",
+      "ubus/libubus-sub.c": "6f283397d5f32737d0a92f0f0cad8b9695006103f8028d56736a3995c32d75ef",
+      "ubus/libubus.c": "58c15542836e223c2e70a9b941af33594711010abb9d9d979670fdcbd6a2c1b8",
+      "ubus/libubus.h": "bb95827df99a800707ba3b6957b8b717c6a775adebac2f8bc9f079aee988e7e2",
+      "ubus/lua/CMakeLists.txt": "fe9a403e732f7aea65d558ba71f5b861726401faeea714b7a8320d81f2089290",
+      "ubus/lua/publisher.lua": "e7736bec56160d008cd288bfa953f6872dc6c3c3e595c6599d0b4145542600d5",
+      "ubus/lua/subscriber.lua": "6c676f4421b7351a522bfcb883476a68117abb238a2d18b4a39b66e5dbce8c1b",
+      "ubus/lua/test.lua": "3cad89bdaa0d528c1aab576b66138ed1f34df298227b7fcf7486bfb9b92b21ff",
+      "ubus/lua/test_client.lua": "02694108a14071263f54e0a0f14bfd7cda34e6b8a76d84f616b2177efc4e9570",
+      "ubus/lua/ubus.c": "43d4204771b99ea52e648b52f8afe25c8afbe77ecf011fdc68989e9d8874f15e",
+      "ubus/tests/CMakeLists.txt": "827adafadfebff40858c29bb4c93df244687f1c34585139a7b1c5fe075bf340c",
+      "ubus/tests/cram/CMakeLists.txt": "d9a15d5e4b49efee2025d7f59f10d254e6cf14b6bd68deba37a5be4d1a6dceca",
+      "ubus/tests/cram/test_ubus.t": "b8a32bfc53deb5c1556fdacf51fbecadac6e15cfe7ed0c1e9f5cf51559bdf11e",
+      "ubus/tests/cram/test_ubusd.t": "9fa9f52aaf1123b5a28d3c8fbcb2e28d3452914af7429aaec4d6181bd1ee2e3e",
+      "ubus/tests/fuzz/CMakeLists.txt": "916dd3a8db0b07113ae0dbcd135781c7d70938649daf223bf8a55057cf309ca3",
+      "ubus/tests/fuzz/corpus/05fe405753166f125559e7c9ac558654f107c7e9": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "ubus/tests/fuzz/corpus/0660e49c13f6d167a8298d885f724bad8f62fc35": "c0df0c84733a383ca8e700a73c7c19760472579cc75e07ab861a695b242a2033",
+      "ubus/tests/fuzz/corpus/37dadeab8d8ce7611f230f9524c1e8ab751c4a6a": "01234566814cd2a2b3cd7c19c907964b4a4f018a19ec224788d9edb74d7376df",
+      "ubus/tests/fuzz/corpus/71520a5c4b5ca73903216857abbad54a8002d44a": "6c453dcd445f88633f051aacd031bb1aba915475890b5d2e2d3db2a16be42b40",
+      "ubus/tests/fuzz/corpus/73c72a4d2bd1cd31b0b44256a888feec9eaaba27": "d84f5f8ae49e06e2823bb60d19fe5b8eaa9c1b1605eebaa3ff07cc7b4aa317dc",
+      "ubus/tests/fuzz/corpus/8db068f76b98df8730f5308b12c793fdf04c47c2": "0d487aed1c6df14f025ef12a6f322cf03c48bb8408ad987770365a2ce48027e2",
+      "ubus/tests/fuzz/corpus/c1dfd96eea8cc2b62785275bca38ac261256e278": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+      "ubus/tests/fuzz/corpus/c42ac1c46f1d4e211c735cc7dfad4ff8391110e9": "85f90dfea1d8027e1463e5ca971a250110a20df0119d204a74220bc63516d15b",
+      "ubus/tests/fuzz/corpus/crash-1b8fb1be45db3aff7699100f497fb74138f3df4f": "12d3f6e49bc86d78b0fd91f0425d7a1a33f3bdfa0b554ea34fd9f599880dc5d9",
+      "ubus/tests/fuzz/corpus/crash-4c4d2c3c9ade5da9347534e290305c3b9760f627": "092d87f08792e61256d7816af7f2185959732f634c0e01a370a924eac58ac108",
+      "ubus/tests/fuzz/corpus/crash-5e9937b197c88bf4e7b7ee2612456cad4cb83f5b": "8d21947a37245440307bb6e2fc88d31c2a59ef24d55c0c9ca28ba433a5c8bc7d",
+      "ubus/tests/fuzz/corpus/crash-75b146c4e6fac64d3e62236b27c64b50657bab2a": "d454b0a90b8a4aec611956def7e56cf9d123833951596007ff2a382102f2f862",
+      "ubus/tests/fuzz/corpus/crash-813f3e68661da09c26d4a87dbb9d5099e92be50f": "b1d3c67c98ac59d2853df45a2b135212e583a59f7d89bd48b229bc4eb2dcb15e",
+      "ubus/tests/fuzz/corpus/crash-98595faa58ba01d85ba4fd0b109cd3d490b45795": "4ac5ea20a278a8720d3457dcf41d2a7ef5fc32a4db548e5cdd02f10b4b3c6282",
+      "ubus/tests/fuzz/corpus/crash-d0f3aa7d60a094b021f635d4edb7807c055a4ea1": "b653003802b83f27c8650a57e6f011574ddca191348b3e98d7555ff35bcdb7fa",
+      "ubus/tests/fuzz/corpus/crash-df9d1243057b27bbad6211e5a23d1cb699028aa2": "723deae7203b2c8fa6aa74e510d7612c1191df357f5627902707628b6031f7bd",
+      "ubus/tests/fuzz/corpus/crash-e2fd5ecb3b37926743256f1083f47a07c39e10c2": "c303ac685423299bded71dbe02ad4f1c89fcb6b24eecb52efb9646210e8bff3b",
+      "ubus/tests/fuzz/corpus/e2814b29dd2fd5db02b1ab7c5e147e1194a489ce": "f399f8efacac5ff3f78caaaeadaf1cebddf3268ffd373d3c02944084d5aefc04",
+      "ubus/tests/fuzz/corpus/valid-blobmsg.bin": "fa54dca070c3afb6d416db96a349b9fd43efd5b5363d93732d9c3be1fbd4f076",
+      "ubus/tests/fuzz/test-fuzz.c": "c3d2465b4a5cd418dbee988092095bcee020dd0dfbc0f9cabb1931dfff7e40c5",
+      "ubus/ubus_common.h": "4eb6211d9afaeeff8b1ea61f4e2fd19258ff7c529a476ef3d4f67f6faddcd5e2",
+      "ubus/ubusd.c": "ca53479089a63a62228f3ba4efa02b274122155f16921cfaccf2da0812fb95f0",
+      "ubus/ubusd.h": "362ae17cce517f769c4f2847c05c204f84c6e84764cbbac2c76ab85f947b7077",
+      "ubus/ubusd_acl.c": "3d1a4f53ccbc03f0215706565b6e683f0d5685c8bcaccfb5c01836798aed033e",
+      "ubus/ubusd_acl.h": "a3caa6c0e90c87b7c97c2ac3d0c0d416082ef777215faec2e9b24ea6e68f6988",
+      "ubus/ubusd_event.c": "d05682b82bdf8da251385f4e47b720baf01615dd9a5e4868f1ce5f0b76a6c357",
+      "ubus/ubusd_id.c": "39d2285bec077ef2b9a94e7c7030de55d61ec4dc7d85efcb51b8c242057d4d2d",
+      "ubus/ubusd_id.h": "82282ba67fc6d0c1e7e9bf209845d7e59f449ca5b27daa91d1f72348873d0bed",
+      "ubus/ubusd_main.c": "1a0bbe3cb1bfe2a3203085ef8ea79bc3625fb6cdd7caf64f1d737f33e8be8dc6",
+      "ubus/ubusd_monitor.c": "7c4a72564ef2b0a0a1aa7118ea2bd620d2fe862096b03d5db6699e9f4c664050",
+      "ubus/ubusd_obj.c": "8b1dcdc37d202a20492314f4b7f133513d10852a1a58e71141f5fb72a0c730a6",
+      "ubus/ubusd_obj.h": "43c30c053f89fa4e11b0c5a6bebf7ba593756035c0bc5fa4c333de078dcb759b",
+      "ubus/ubusd_proto.c": "709b60cde286127d615797f4097e947550f3a059398f72a2e50dd16b410e6afc",
+      "ubus/ubusmsg.h": "a20942befcd07205a27aa2d3c66b194434c245b310de607d07d7e0bf2de7c285"
+    },
+    "linkage": "static, private to fxsd; system ubus and libraries are unchanged"
+  }
+}
