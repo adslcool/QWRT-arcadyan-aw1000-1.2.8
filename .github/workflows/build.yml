@@ -1,0 +1,87 @@
+name: AW1000 QWRT 改造
+on:
+  workflow_dispatch:
+    inputs:
+      firmware_url:
+        description: '原 QWRT 25.12.2 固件 URL（ZIP 或 UBI）'
+        type: string
+        required: true
+      router_name:
+        description: '路由器名称（主机名）'
+        type: string
+        default: 'AW1000'
+      lan_ip:
+        description: 'LAN IPv4（固定 /24）'
+        type: string
+        default: '192.168.1.1'
+      ssid_24g:
+        description: '2.4 GHz SSID'
+        type: string
+        default: 'AW1000_2.4G'
+      ssid_5g:
+        description: '5 GHz SSID'
+        type: string
+        default: 'AW1000_5G'
+      wifi_password:
+        description: '双频共用 Wi-Fi 密码；可留空使用 WIFI_PASSWORD Secret'
+        type: string
+        default: '1234567890'
+      root_password:
+        description: 'root 密码；留空用 Secret，均为空则按 SN 生成，无 SN 用 password'
+        type: string
+        required: false
+permissions:
+  contents: write
+concurrency:
+  group: aw1000-qwrt-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      TZ: Asia/Shanghai
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: 安装构建工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends squashfs-tools mtd-utils gcc-aarch64-linux-gnu libc6-dev-arm64-cross gcc jq make python3-venv openssl lua5.1 qemu-user-static
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+      - name: 检查 ARM64 头文件与静态链接环境
+        run: .venv/bin/python scripts/phone.py --check-toolchain
+      - name: 验证输入并生成私有配置
+        env:
+          FIRMWARE_URL: ${{ inputs.firmware_url }}
+          ROUTER_NAME: ${{ inputs.router_name }}
+          LAN_IP: ${{ inputs.lan_ip }}
+          SSID_24G: ${{ inputs.ssid_24g }}
+          SSID_5G: ${{ inputs.ssid_5g }}
+          WIFI_PASSWORD: ${{ inputs.wifi_password || secrets.WIFI_PASSWORD }}
+          ROOT_PASSWORD: ${{ inputs.root_password || secrets.ROUTER_ADMIN_PASSWORD }}
+          BOARD_STATE_KEY: ${{ secrets.BOARD_STATE_KEY }}
+          PHONE_MODE: bundled
+        run: .venv/bin/python scripts/settings.py
+      - name: 检查源码与参数
+        run: |
+          .venv/bin/python -m unittest discover -s tests -v
+          .venv/bin/python scripts/check_source.py
+      - name: 解包、定制、重打包并验证
+        run: |
+          export PATH="$PWD/.venv/bin:$PATH"
+          python scripts/build.py
+      - name: 验证完整成品运行库与网络逻辑
+        run: |
+          export AW1000_TEST_TARGET_ROOT="$PWD/work/build/root"
+          .venv/bin/python -m unittest discover -s tests -v
+      - name: 发布至 Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .venv/bin/python scripts/publish_release.py
+      - name: 清理临时凭据
+        if: always()
+        run: rm -rf .private work/root work/build/root
+      # Deliberately no upload-artifact action. The run log holds build diagnostics.
